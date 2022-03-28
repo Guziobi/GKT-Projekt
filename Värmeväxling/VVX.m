@@ -1,0 +1,2 @@
+% Värmeväxling
+clc, clear

@@ -41,4 +41,4 @@ Cp_D = 100;
 l = [0 10];     % Längd på reaktor1
 rho_cat = 1120; % [kg/m3] 
 
->>>>>>> adb37a33b7b61180ece1798f4e9254a2611c5c59
+

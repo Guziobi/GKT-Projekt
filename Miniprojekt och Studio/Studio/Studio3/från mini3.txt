@@ -1,0 +1,92 @@
+from ast import Lambda
+from cmath import exp, log
+import math
+
+P = 1520*2 # mmHg
+Xf = 0.35
+tol = 0.01
+Tb_m = 64.7
+Tb_e = 77.1
+
+A1 = 7.87863
+B1 = 1473.11
+C1 = 230.0
+
+A2 = 7.09803
+B2 = 1238.71
+C2 = 217.0
+
+Lambda12 = 0.62551
+Lambda21 = 0.49384
+
+#Beräknar ångtryck med Antoines lag
+def antoine(A, B, C, T):
+    P0_i = 10**(A - (B)/(T + C))
+
+    return P0_i
+
+#Interpolerar mellan två gissnigar och genererar nästa värde
+def interpolation(T_n, T_n1, P, P_n, P_n1):
+    T_n2 = T_n1 + ((P - P_n1) * (T_n - T_n1))/(P_n - P_n1)
+    return T_n2
+
+# Beräknar aktivitetsfaktorer för de två ämnena
+def willson(x1, Lambda12, Lambda21):
+    x2 = 1 - x1
+
+    ln_gamma1 = - log(x1 + Lambda12*x2) + x2*(Lambda12/(x1 + Lambda12*x2) - Lambda21/(Lambda21*x1 + x2))
+    ln_gamma2 = - log(x2 + Lambda21*x1) - x1*(Lambda12/(x1 + Lambda12*x2) - Lambda21/(Lambda21*x1 + x2))
+
+    gamma1 = exp(ln_gamma1)
+    gamma2 = exp(ln_gamma2)
+
+    return gamma1, gamma2
+
+def relflyktighet(x1, y1):
+    x2 = 1-x1
+    y2 = 1-y1
+
+    alpha12 = ( y1/x1 )/( y2/x2 )
+    return alpha12    
+
+
+diff = 1
+
+T_n = Tb_m
+P0_1 = antoine(A1, B1, C1, T_n)  #Beräkna ångtryck
+P0_2 = antoine(A2, B2, C2, T_n)  #Beräkna ångtryck
+P_n = P0_1*Xf + P0_2*(1-Xf)
+
+T_n1 = Tb_e
+P0_1 = antoine(A1, B1, C1, T_n1)  #Beräkna ångtryck
+P0_2 = antoine(A2, B2, C2, T_n1)  #Beräkna ångtryck
+P_n1 = P0_1*Xf + P0_2*(1-Xf)
+
+
+while diff >= tol:
+#for i in range(10):
+    T_n2 = interpolation(T_n, T_n1, P, P_n, P_n1)
+
+    T_n = T_n1
+    T_n1 = T_n2
+
+    P0_1 = antoine(A1, B1, C1, T_n1)  #Beräkna ångtryck för komponent 1
+    P0_2 = antoine(A2, B2, C2, T_n1)  #Beräkna ångtryck för komponent 2
+
+    gamma1, gamma2 = willson(Xf, Lambda12, Lambda21)
+
+    y1 = (P0_1 * Xf * gamma1)/P            #Beräknar ångfraktionen
+    y2 = (P0_2 * (1 - Xf) * gamma2)/P
+    print(y1, y2)
+
+    diff = abs((y1+y2) - 1)         #Bryter loopen om 1 - sum av y är mindre än tolleransen
+
+    P_n = P_n1
+    P_n1 = P0_1*Xf*gamma1 + P0_2*(1-Xf)*gamma2
+
+
+alpha = relflyktighet(Xf, y1)
+
+
+print('Diff: ', diff, ' Temp: ', T_n1)
+print('Alpha: ', alpha)

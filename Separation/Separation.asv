@@ -1,0 +1,115 @@
+% Separation
+clc, clear
+
+% Data - separation 
+F = 100;           % kmol h-1
+T = ;           % deg celsius
+P = 760;        % mmHg (1 atm)
+xf = 0.50;          % molbråk buten
+xd = 0.95;      % destillatbråk 
+xb = 0.05;      % bottenbråk
+R = ;           % återflödesförhållande
+
+         % A      B       C
+Ant1 =  [15.7564 2132.42 -33.15];  % buten
+Ant2 =  [15.6782 2154.90 -34.42];  % butan 
+
+W12 = 0.48584; 
+W21 = 1.64637; 
+
+rho_buten = ;          % kgm-3
+rho_butan = ;          % kgm-3
+
+liqsurften = ;         % dyn cm-1
+
+% Bubbelpunktsberäkning
+Tstart = 25; 
+TB=fsolve(@(T)lnfind_Tb(T,xf,1,1,Ant1(1),Ant1(2),Ant1(3),Ant2(1),Ant2(2),Ant3(2),P),Tstart);
+
+% Beräkning av flöden 
+B = F*((xf-xd)/(xb-xd));
+D = F-B;
+
+L = R*D; 
+V = L+D;
+
+l = L + q*F; 
+v = l-B;
+
+% Återkokare 
+y0 = (alpha*xb)/(1+(alpha-1)*xb);
+x1 = (v/l)*y0 + (B/l)*xb;
+
+% Avdrivardel 
+x(1) = x1;
+i = 0; 
+
+while x<xf
+    i = i+1; 
+    y(i) = (alpha*x(i))/(1+(alpha-1)*x(i));
+    x(i+1) = (v/l)*y(i) + (B/l)*xb;
+end
+
+m = i+1;
+
+% Förstärkare
+while y(i)<xd
+    x(i+1)= (V/L)*y(i) + (1/L)*(B*xb-F*xf);         % Komponentbalans över förstärkardelen
+    i=i+1;
+    y(i)=(alpha*x(i))/(1+(alpha-1)*x(i));
+end
+
+% Värmen
+Q_condensor = (Hvap*V*x(end)+Hvap*V*(1-x(end)))*10^3*3600^-1;      % W
+Q_reboiler = (Hvap*v*y0 + Hvap*v*(1-y0))*10^3*3600^-1;             % W
+
+% Temperaturberäkning i 2nd stage
+Tguess = 100; 
+T2 = fsolve(@(T)findT(T,y(2),x(2),Ant_ethanol(1),Ant_ethanol(2),Ant_ethanol(3),P),Tguess);
+
+% Faktorer
+M_L = (x1*46.07+(1-x1)*60.0952)*10^-3;      % kg mol^-1
+M_V = (y0*46.07+(1-y0)*60.0952)*10^-3;      % kg mol^-1
+
+massandel_ethanol = (x1*46.07)/(x1*46.07+(1-x1)*60.0952);
+rho_liquid = (massandel_ethanol*rho_ethanol+(1-massandel_ethanol)*rho_propanol);
+
+F_LV = ((l*M_L)/(v*M_V))*sqrt(rho_vapour/rho_liquid);
+C_F = 0.38*0.3048;                                         % Läs av diagram efter att F_LV beräknats (m/s)
+F_F = 1;
+F_ST = (liqsurften/20)^0.2;
+F_HA = 1;
+C = F_ST*F_F*F_HA*C_F;  
+
+U_F = C*sqrt((rho_liquid-rho_vapour)/rho_vapour); 
+U = 0.7*U_F; 
+
+V_flowrate = v*10^3*3600^-1*M_V*rho_vapour^-1;
+A_aktiv = V_flowrate/U; 
+A = A_aktiv/0.8;
+d = 2*sqrt(A/pi);
+
+
+% UTSKRIVNING AV RESULTAT
+disp([' ' ])
+disp(['Ideala steg:               ' num2str(i)])
+disp(['Diameter på tornet:        ' num2str(d)])
+disp(['Höjd på tornet:            ' num2stri()])
+disp([' ' ])
+
+% Vapour and liquid flowrates in kmol h^-1
+disp(['L (förstärkardel):         ' num2str(L)])
+disp(['V (förstärkardel):         ' num2str(V)])
+disp(['L (avdrivardel):           ' num2str(l)])
+disp(['V (avdrivardell):          ' num2str(v)])
+disp([' ' ])
+
+% Värmen
+disp(['Condenser duty (MW)        ' num2str(Q_condensor*10^-6)])
+disp(['Reboiler duty (MW)         ' num2str(Q_reboiler*10^-6)])
+disp([' ' ])
+
+% Factors from correlation
+disp(['F_LV                       ' num2str(F_LV)])
+disp(['C_F (ft s^-1)              ' num2str(C_F/0.3048)])
+disp([' ' ])

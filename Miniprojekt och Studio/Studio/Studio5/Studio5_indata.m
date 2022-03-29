@@ -4,18 +4,20 @@
 clear, clc;
 
 % Givna data
-mc=4;            %[kg/s]         Produktflöde (c=kalla flödet)
-cpc=2.4e3;       %[J/(kgK)]      Produktflödets värmekapacitet
+M_A=58.12*1000;  %[kg/mol]
+M_B=56.11*1000;  %[kg/mol]
+Fc_A=128*10^3;
+                   %[mol/s]         Produktflöde (c=kalla flödet)
+cpc=;       %[J/(molK)]      Produktflödets värmekapacitet
 TCin=20;         %[C]            Produktflödets temperatur in
 TCut=100;        %[C]            Produktflödets temperatur ut
-mh=3.0;          %[kg/s]         Kondensatflöde (h=varma flödet)
-cph=4.18e3;      %[J/(kgK)]      Kondensatflödets värmekapacitet
+mh=3.0;          %[mol/s]         Kondensatflöde (h=varma flödet)
+cph=;      %[J/(molK)]      Kondensatflödets värmekapacitet
 THin=90;         %[C]            Kondensatflödets temperatur in
-Abef=25;         %[m2]           Arean på den befintliga förvärmaren
 U=1500;          %[W/(m2K)]      Värmegenomgångstal
 Ka=600;          %[SEK/(m2 år)]  Kostnad för värmeväxlaren
 beta=0.10e-3;    %[SEK/Wh]       Kostnad för ångan
-tdrift=4000;     %[h/år]         Driftstid på ett år
+tdrift=8760;     %[h/år]         Driftstid på ett år
 
 
 % Beräkna kapacitetskoefficienterna, Cmin och Cmax.

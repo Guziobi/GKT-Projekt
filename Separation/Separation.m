@@ -8,7 +8,7 @@ P = 760;           % mmHg (1 atm)
 xf = 0.50;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
-R = ;              % återflödesförhållande
+R = 1;              % återflödesförhållande
 M1 = 56.1063;      % g mol-1
 M2 = 58.1222;      % g mol-1
 
@@ -35,12 +35,12 @@ l = L + q*F;
 v = l-B;
 
 % Återkokare 
-x1 = (v/l)*y0 + (B/l)*xb;
-gammma = wilson(x1,W12,W21);
+gammma = wilson(xb,W12,W21);
 Tstart = 25;
-TB=fsolve(@(T)find_Tb(T,x1,gamma1,gamma2,Ant1,Ant2,P),Tstart);
-P1 = anto(TB, Ant1);
-y0 = (gamma(1)*x1.*P1)/P;
+TB=fsolve(@(T)find_Tb(T,xb,gamma(1),gamma(2),Ant1,Ant2,P),Tstart);
+Psat1 = antoine(TB, Ant1);
+y0 = (gamma(1)*xb.*Psat1)/P;
+x1 = (v/l)*y0 + (B/l)*xb;
 
 % Avdrivardel 
 x(1) = x1;
@@ -51,8 +51,8 @@ while x<xf
     gammma = wilson(x(i),W12,W21);
     Tstart = TB;
     TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
-    P1 = anto(TB, Ant1);                                                % Ångtryck
-    y(i) = (gamma(1)*x(i).*P1)/P;
+    Psat1 = antoine(TB, Ant1);                                                % Ångtryck
+    y(i) = (gamma(1)*x(i).*Psat1)/P;
     x(i+1) = (v/l)*y(i) + (B/l)*xb;
 end
 
@@ -65,10 +65,12 @@ while y(i)<xd
     gammma = wilson(x(i),W12,W21);
     Tstart = TB;
     TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
-    P1 = anto(TB, Ant1);                                                % Ångtryck
-    y(i) = (gamma(1)*x(i).*P1)/P;
+    Psat1 = antoine(TB, Ant1);                                                % Ångtryck
+    y(i) = (gamma(1)*x(i).*Psat1)/P;
 end
 
+
+%% del 2
 % Värmen
 Q_condensor = (Hvap*V*x(end)+Hvap*V*(1-x(end)))*10^3*3600^-1;      % W
 Q_reboiler = (Hvap*v*y0 + Hvap*v*(1-y0))*10^3*3600^-1;             % W
@@ -130,7 +132,7 @@ function [gamma1, gamma2] = wilson(x1,W12,W21)
 
 end
 
-function P_sat = anto(T,Ant)
+function P_sat = antoine(T,Ant)
 
     A = Ant(1);
     B = Ant(2); 

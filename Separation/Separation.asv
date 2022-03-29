@@ -65,7 +65,7 @@ while y(i)<xd
     gammma = wilson(x(i),W12,W21);
     Tstart = TB;
     TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
-    P1 = anto(TB, Ant1);                                                % Ångtryck
+    P1 = anto(TB, Ant1);                                                % Ångtryck                                
     y(i) = (gamma(1)*x(i).*P1)/P;
 end
 

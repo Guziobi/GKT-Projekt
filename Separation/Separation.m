@@ -8,7 +8,7 @@ P = 760;           % mmHg (1 atm)
 xf = 0.50;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
-R = 1;              % återflödesförhållande
+R = 10;              % återflödesförhållande
 M1 = 56.1063;      % g mol-1
 M2 = 58.1222;      % g mol-1
 
@@ -35,24 +35,25 @@ l = L + q*F;
 v = l-B;
 
 % Återkokare 
-gammma = wilson(xb,W12,W21);
-Tstart = 25;
-TB=fsolve(@(T)find_Tb(T,xb,gamma(1),gamma(2),Ant1,Ant2,P),Tstart);
+[gamma1, gamma2] = wilson(xb,W12,W21);
+Tstart = 273.15;
+TB=fsolve(@(T)find_Tb(T,xb,gamma1,gamma2,Ant1,Ant2,P),Tstart);
 Psat1 = antoine(TB, Ant1);
-y0 = (gamma(1)*xb.*Psat1)/P;
+y0 = (gamma1*xb.*Psat1)/P;
 x1 = (v/l)*y0 + (B/l)*xb;
 
 % Avdrivardel 
 x(1) = x1;
 i = 0; 
+y(1)=y0;
 
 while x<xf
     i = i+1; 
-    gammma = wilson(x(i),W12,W21);
+    [gamma1, gamma2] = wilson(x(i),W12,W21);
     Tstart = TB;
     TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
     Psat1 = antoine(TB, Ant1);                                                % Ångtryck
-    y(i) = (gamma(1)*x(i).*Psat1)/P;
+    y(i) = (gamma1*x(i).*Psat1)/P;
     x(i+1) = (v/l)*y(i) + (B/l)*xb;
 end
 
@@ -62,11 +63,11 @@ m = i+1;
 while y(i)<xd
     x(i+1)= (V/L)*y(i) + (1/L)*(B*xb-F*xf);                             % Komponentbalans över förstärkardelen
     i=i+1;
-    gammma = wilson(x(i),W12,W21);
+    [gamma1, gamma2] = wilson(x(i),W12,W21);
     Tstart = TB;
     TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
     Psat1 = antoine(TB, Ant1);                                                % Ångtryck
-    y(i) = (gamma(1)*x(i).*Psat1)/P;
+    y(i) = (gamma1*x(i).*Psat1)/P;
 end
 
 

@@ -35,9 +35,9 @@ l = L + q*F;
 v = l-B;
 
 % Återkokare 
-gammma = wilson(x1,W12,W21);
+[gamma1, gamma2] = wilson(xb,W12,W21);
 Tstart = 25;
-TB=fsolve(@(T)find_Tb(T,x1,gamma1,gamma2,Ant1,Ant2,P),Tstart);
+TB=fsolve(@(T)find_Tb(T,xb,gamma1,gamma2,Ant1,Ant2,P),Tstart);
 Psat1 = antoine(TB, Ant1);
 y0 = (gamma(1)*xb.*Psat1)/P;
 x1 = (v/l)*y0 + (B/l)*xb;
@@ -48,7 +48,7 @@ i = 0;
 
 while x<xf
     i = i+1; 
-    gammma = wilson(x(i),W12,W21);
+    [gamma1, gamma2] = wilson(x(i),W12,W21);
     Tstart = TB;
     TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
     Psat1 = antoine(TB, Ant1);                                                % Ångtryck
@@ -62,13 +62,15 @@ m = i+1;
 while y(i)<xd
     x(i+1)= (V/L)*y(i) + (1/L)*(B*xb-F*xf);                             % Komponentbalans över förstärkardelen
     i=i+1;
-    gammma = wilson(x(i),W12,W21);
+    gamma = wilson(x(i),W12,W21);
     Tstart = TB;
     TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
     Psat1 = antoine(TB, Ant1);                                                % Ångtryck
     y(i) = (gamma(1)*x(i).*Psat1)/P;
 end
 
+
+%% del 2
 % Värmen
 Q_condensor = (Hvap*V*x(end)+Hvap*V*(1-x(end)))*10^3*3600^-1;      % W
 Q_reboiler = (Hvap*v*y0 + Hvap*v*(1-y0))*10^3*3600^-1;             % W

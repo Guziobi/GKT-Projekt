@@ -1,27 +1,52 @@
-function dUdV = ode_pfr(U, R, Ea, Cp, T)
+function dUdV = PFR_ode(U, Cp)
 
-NA = U(1); NB = U(2); NC = U(3); ND = U(4);
-Cp_A = Cp(1); Cp_B = Cp(2); Cp_C = Cp(3); Cp_D = Cp(4);
+% A = isobutAn (C4H10)
+% B = isobutEn (C4H8)
+% C = Vätgas   (H2)
+% D = vatten   (H2O)
 
-sumNCp = NA*Cp_A + NB*Cp_B + NC*Cp_C + ND*Cp_D;
+% Data
+R  = 8.31447; % gaskon.
+P  = 1;       % bar 
+k  = 0.0596;  % mol/kg cat.*s*bar vid 550 C
+K1 = 22.9;    % bar^-1.5
+K2 = 7.56;    % bar^-1
+
+% Hämtar molflöden och temperatur
+FA = U(1); FB = U(2); 
+FC = U(3); FD = U(4); 
+T = U(5);
+F_tot = FA + FB + FC + FD;
+
+% Hämtar Cp
+Cp_A = Cp(1); Cp_B = Cp(2); 
+Cp_C = Cp(3); Cp_D = Cp(4);
+
+%Beräknar partialtryck
+PA = P*(FA/F_tot); PB = P*(FB/F_tot);
+PC = P*(FA/F_tot); PD = P*(FD/F_tot);
+
+% Ke som funktion av T
+Ke = @(T)(2.1*10^7) * exp(-122000/(R*T)) % bar
 
 
-PA = NA * R * T / V;
-PB = NB * R * T / V;
-PC = NC * R * T / V;
+% Beräknar rA
+rA = (k* (PA - (PB*PC/Ke(T)))) / (1 + K1*PB*sqrt(PC) + sqrt(K2*PC));
 
-rA = ( k* (PA - (PB*PC/Ke))) / (1 + K1*PB*sqrt(PC) + sqrt(K2*PC));
+sumFCp = FA*Cp_A + FB*Cp_B + FC*Cp_C + FD*Cp_D;
 
-% Massbalanser
+% Massbalanser för A -> B + C
+dFA = -rA;
+dFB =  rA;
+dFC =  rA;
+dFD =  0;
 
-dNA = -rA * dV;
-dNB =  rA * dV;
-dNC =  rA * dV;
-dND = 0;
+% deltaH för en viss temp ska beräknas via Cp vid en viss temp här för att
+% få en dTdV
 
 
 % Temperaturbalans
-dTdV = r * -dH / (sumNCp)
+dTdV = r * -dH / (sumFCp)
 
-dUdV = [dNA dNB dNC dND dTdV];
+dUdV = [dFA dFB dFC dFD dTdV];
 end

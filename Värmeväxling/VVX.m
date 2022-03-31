@@ -1,4 +1,5 @@
-% VÃ¤rmevÃ¤xling
+% Värmeväxling
+% A=isobutan, B=isobuten, C=vätgas, D=vatten
 %% VVX 1
 
 clc, clear
@@ -28,22 +29,25 @@ yc_C=Fc_C./Fc_tot;
 yc_D=Fc_D./Fc_tot;
 
 %Värmekapaciteter
-cpc_A=;
-cpc_B=;
-cpc_C=;
-cpc_D=;
+cpc_A=cp_A(Tcin);
+cpc_B=cp_B(Tcin);
+cpc_C=cp_C(Tcin);
+cpc_D=cp_D(Tcin);
 
 cpc_tot=yc_A.*cpc_A+yc_B.*cpc_B+yc_C.*cpc_C+yc_D.*cpc_D; %[J/(molK)]  Total värmekapacitet
 
 %Varma sidan
-cph=4.18*10^3;   %[J/(kgK)]      Kondensatflödets värmekapacitet??
-Thin=90;         %[C]            Kondensatflödets temperatur in?
-U=1500;          %[W/(m2K)]      Värmegenomgångstal??
+cph=4.18*10^3;   %[J/(kgK)]      Kondensatflödets värmekapacitet
+Thin=90;         %[C]            Kondensatflödets temperatur in
+U=1500;          %[W/(m2K)]      Värmegenomgångstal
 
 %Kostnader och övrigt
-Ka=600;          %[SEK/(m2  r)]  Kostnad för värmeväxlaren????
-beta=0.10*10^-3; %[SEK/Wh]       Kostnad för ångan??
-tdrift=8760;     %[h/ r]         Driftstid på ett år???
+Ka=600;          %[SEK/(m2 år)]  Kostnad för värmeväxlaren
+beta=0.10*10^-3; %[SEK/Wh]       Kostnad för ångan
+tdrift=8760;     %[h/år]         Driftstid på ett år
 
 
 epsilon = @(NTU)(1 - exp(-NTU.*(1 - Cmin/Cmax)))/(1 - (Cmin/Cmax).*exp(-NTU.*(1 - Cmin/Cmax)));
+
+
+

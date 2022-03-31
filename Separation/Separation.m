@@ -5,10 +5,10 @@ clc, clear
 q = 1;             % kokvarmt tillflöde
 F = 100;           % kmol h-1
 P = 2280;           % mmHg (3 atm)
-xf = 0.50;         % molbråk buten
+xf = 0.80;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
-R = 10;              % återflödesförhållande
+R = 5;              % återflödesförhållande
 %Molmassor
 M1 = 56.1063;      % g mol-1
 M2 = 58.1222;      % g mol-1
@@ -21,10 +21,10 @@ Ant2 =  [15.6782 2154.90 -34.42];  % butan
 W12 = 0.48584; 
 W21 = 1.64637; 
 %Densiteter
-L_rho1 = 10;          % kgm-3 Buten
-L_rho2 = 10;          % kgm-3 Butan
+L_rho1 = 559.0;          % kgm-3 Buten
+L_rho2 = 556.62;          % kgm-3 Butan
 %Ytspänning
-surfaceten = 1;          % dyn cm-1
+surfaceten = 24;          % dyn cm-1
     
 % Beräkning av flöden 
 B = F*((xf-xd)/(xb-xd));
@@ -91,6 +91,9 @@ vaporveloc = 0.7;
 Ff = 1; %nono-foaming
 Fha = 1; %Hålen är bra
 
+%Bottenavstånd
+trayheight = 0.45; %m
+
 %Densiteter för vätska och gas
 rho_L = ((l_x1*M1)/(l_x1*M1 + l_x2*M2))*L_rho1 + ((l_x2*M2)/(l_x1*M1 + l_x2*M2))*L_rho2; % kg m-3
 rho_V = 10;
@@ -123,40 +126,24 @@ Atot = Aaktiv/0.8;
 %Bottendiameter
 d = 2*sqrt(Atot/pi);
 
+%Kolonnens höjd
+h = trayheight * (i + 1);
+
 %% del 2
+
+Hvap1 = 20.6e3;  % j mol-1
+Hvap2 = 19.99e3; % j mol-1
+
 % Värmen
-Q_condensor = (Hvap*V*x(end)+Hvap*V*(1-x(end)))*10^3*3600^-1;      % W
-Q_reboiler = (Hvap*v*y0 + Hvap*v*(1-y0))*10^3*3600^-1;             % W
+Q_condensor = (Hvap1*V*x(end) + Hvap2*V*(1-x(end))) * 3600^-1;      % W
+Q_reboiler = (Hvap1*v*y0 + Hvap2*v*(1-y0)) * 3600^-1;             % W
 
 
-% Faktorer
-M_L = (x1*M1+(1-x1)*M2)*10^-3;      % kg mol^-1
-M_V = (y0*M1+(1-y0)*M2)*10^-3;      % kg mol^-1
-
-massandel_ethanol = (x1*46.07)/(x1*46.07+(1-x1)*60.0952);
-rho_liquid = (massandel_ethanol*rho_ethanol+(1-massandel_ethanol)*rho_propanol);
-
-F_LV = ((l*M_L)/(v*M_V))*sqrt(rho_vapour/rho_liquid);
-C_F = 0.38*0.3048;                                         % Läs av diagram efter att F_LV beräknats (m/s)
-F_F = 1;
-F_ST = (surfaceten/20)^0.2;
-F_HA = 1;
-C = F_ST*F_F*F_HA*C_F;  
-
-U_F = C*sqrt((rho_liquid-rho_vapour)/rho_vapour); 
-U = 0.7*U_F; 
-
-V_flowrate = v*10^3*3600^-1*M_V*rho_vapour^-1;
-A_aktiv = V_flowrate/U; 
-A = A_aktiv/0.8;
-d = 2*sqrt(A/pi);
-
-
-% UTSKRIVNING AV RESULTAT
+%% UTSKRIVNING AV RESULTAT
 disp([' ' ])
 disp(['Ideala steg:               ' num2str(i)])
 disp(['Diameter på tornet:        ' num2str(d)])
-disp(['Höjd på tornet:            ' num2stri()])
+disp(['Höjd på tornet:            ' num2str(h)])
 disp([' ' ])
 
 % Vapour and liquid flowrates in kmol h^-1
@@ -172,8 +159,8 @@ disp(['Reboiler duty (MW)         ' num2str(Q_reboiler*10^-6)])
 disp([' ' ])
 
 % Factors from correlation
-disp(['F_LV                       ' num2str(F_LV)])
-disp(['C_F (ft s^-1)              ' num2str(C_F/0.3048)])
+disp(['F_LV                       ' num2str(Flv)])
+disp(['C_F (ft s^-1)              ' num2str(Cf/0.3048)])
 disp([' ' ])
 
 

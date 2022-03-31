@@ -121,10 +121,14 @@ d = 2*sqrt(Atot/pi);
 TB_2= fsolve(@(T)find_Tb(x(2),1,1,Ant_a(1),Ant_a(2),Ant_a(3),Ant_b(1),Ant_b(2),Ant_b(3),P,T), Tguess);
 
 %% Värmebehov
+
+Hvap1 = 20.6e3;  % j mol-1
+Hvap2 = 19.99e3; % j mol-1
+
 % återkokare
-qw= v.*Hvap_flow*(1/60)*(1/60);        % Ångbildningsvärme i kW
+qw= v.Hvap*(1/60)*(1/60);        % Ångbildningsvärme i kW
 % kondensor
-qc= V.*Hvap_flow*(1/60)*(1/60);        % Kylning i kW
+qc= V.*Hvap_top*(1/60)*(1/60);        % Kylning i kW
 
 
 %% Display

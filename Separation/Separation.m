@@ -21,8 +21,8 @@ Ant2 =  [15.6782 2154.90 -34.42];  % butan
 W12 = 0.48584; 
 W21 = 1.64637; 
 %Densiteter
-L_rho1 = 1;          % kgm-3 Buten
-L_rho2 = 1;          % kgm-3 Butan
+L_rho1 = 10;          % kgm-3 Buten
+L_rho2 = 10;          % kgm-3 Butan
 %Ytspänning
 surfaceten = 1;          % dyn cm-1
     
@@ -75,6 +75,53 @@ while y(i)<xd
     y(i) = (gamma1*x(i).*Psat1)/P;
 end
 
+%% Dimensionering
+
+% Sammansättning ut ur återkokare
+v_x1 = y0;              % Buten
+v_x2 = 1-y0;            % Butan
+% Sammansättning in i återkokare
+l_x1 = x(1);
+l_x2 = 1 - x(1);
+
+% Flödesfaktorer
+surftention = 70; %dyn cm-1
+Fst = (surftention/20)^0.2;
+vaporveloc = 0.7;
+Ff = 1; %nono-foaming
+Fha = 1; %Hålen är bra
+
+%Densiteter för vätska och gas
+rho_L = ((l_x1*M1)/(l_x1*M1 + l_x2*M2))*L_rho1 + ((l_x2*M2)/(l_x1*M1 + l_x2*M2))*L_rho2; % kg m-3
+rho_V = 10;
+
+%molmassor
+M_L = l_x1*M1 + l_x2*M2;
+M_V = v_x1*M1 + v_x2*M2;
+
+%Belastningsparameter
+Flv = ((l*M_L)/(v*M_V)) * sqrt(rho_V/rho_L);
+
+% från diagramet
+Cf = 0.25*0.3048; %ft/s -> m/s
+
+%Flödningsparametern
+C = Fst*Ff*Fha*Cf;
+
+% Ånghastigheten vid flödning
+Uf = C*sqrt((rho_L-rho_V)/rho_V);
+
+%Ånghastighet
+U = vaporveloc*Uf;
+
+%Aktiv area
+Aaktiv = (V*(1/3.6)*M_V*(1/rho_V))/U;
+
+%Total area
+Atot = Aaktiv/0.8;
+
+%Bottendiameter
+d = 2*sqrt(Atot/pi);
 
 %% del 2
 % Värmen

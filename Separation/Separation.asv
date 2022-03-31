@@ -45,8 +45,8 @@ y0 = (gamma1*xb.*Psat1)/P;
 x1 = (v/l)*y0 + (L_rho1/l)*xb;
 
 % Avdrivardel 
-x = zeros()
-
+x = zeros(30);
+y = zeros(30);
 x(1) = x1;
 y(1)=y0;
 i = 0; 
@@ -74,6 +74,31 @@ while y(i)<xd
     Psat1 = antoine(TB, Ant1);                                      % Ångtryck
     y(i) = (gamma1*x(i).*Psat1)/P;
 end
+
+%% Dimensionering
+
+% Sammansättning in i återkokare
+l_x1 = x(1);
+l_x2 = 1 - x(1);
+
+% Flödesfaktorer
+surftention = 70; %dyn cm-1
+Fst = (surftention/20)^0.2;
+vaporveloc = 0.7;
+Ff = 1; %nono-foaming
+Fha = 1; %Hålen är bra
+
+%Densiteter för vätska och gas
+rho_L = ((l_x1*M1)/(l_x1*M1 + l_x2*M2))*L_rho1 + ((l_x2*M2)/(l_x1*M1 + l_x2*M2))*L_rho2; % kg m-3
+
+
+%molmassor
+M_L = l_x1*M1 + l_x2*M2;
+M_V = v_x1*M1 + v_x2*M2;
+
+%Belastningsparameter
+Flv = ((l*M_L)/(v*M_V)) * sqrt(rho_V/rho_L);
+
 
 
 %% del 2

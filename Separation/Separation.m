@@ -140,8 +140,8 @@ Hvap1 = 20.6e3;  % j mol-1
 Hvap2 = 19.99e3; % j mol-1
 
 % Värmen
-Q_condensor = (Hvap1*V*x(end) + Hvap2*V*(1-x(end))) * 3600^-1;      % W
-Q_reboiler = (Hvap1*v*y0 + Hvap2*v*(1-y0)) * 3600^-1;             % W
+Q_condensor = (Hvap1*V*1e3*x(end) + Hvap2*V*1e3*(1-x(end))) * 3600^-1;    % W
+Q_reboiler = (Hvap1*v*1e3*y0 + Hvap2*v*1e3*(1-y0)) * 3600^-1;             % W
 
 
 %% UTSKRIVNING AV RESULTAT

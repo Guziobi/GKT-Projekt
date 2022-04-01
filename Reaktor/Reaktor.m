@@ -45,10 +45,8 @@ T = T_reaktorer(4); %K, equlibrium-conversion mot T börjar avta vid denna ~temp
 A_H2O = 30.092;
 B_H2O = 6.832514;
 C_H2O = 6.793435;
-<<<<<<< HEAD
-D_H2O = -2.53448;87
+D_H2O = -2.53448;
 Cp_H2O = (A_H2O + (B_H2O.*(T.*10^-3)) + (C_H2O.*((T.*10^-3).^2)) + (D_H2O.*((T.*10^-3).^3)))%[kJ/mol]
-=======
 D_H2O = -2.53448;
 Cp_H2O = (A_H2O + (B_H2O.*(T.*10^-3)) + (C_H2O.*((T.*10^-3).^2)) + (D_H2O.*((T.*10^-3).^3)));%[kJ/mol]
 

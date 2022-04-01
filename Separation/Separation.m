@@ -1,11 +1,12 @@
 % Separation
 clc, clear
+options = optimset('Display','off');    % Så att skit inte skrivs ut efter fsolve
 
 % Data - separation 
 q = 1;             % kokvarmt tillflöde
 F = 100;           % kmol h-1
 P = 2280;           % mmHg (3 atm)
-xf = 0.80;         % molbråk buten
+xf = 0.40;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
 R = 5;              % återflödesförhållande
@@ -22,7 +23,7 @@ W12 = 0.48584;
 W21 = 1.64637; 
 %Densiteter
 L_rho1 = 559.0;          % kgm-3 Buten
-L_rho2 = 556.62;          % kgm-3 Butan
+L_rho2 = 556.62;         % kgm-3 Butan
 %Ytspänning
 surfaceten = 24;          % dyn cm-1
     
@@ -37,16 +38,18 @@ l = L + q*F;    % L-streck
 v = l-B;        % V-streck
 
 % Återkokare 
+T = zeros(1,30);
 [gamma1, gamma2] = wilson(xb,W12,W21);
 Tstart = 273.15;
-TB=fsolve(@(T)find_Tb(T,xb,gamma1,gamma2,Ant1,Ant2,P),Tstart);
+TB=fsolve(@(T)find_Tb(T,xb,gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+TB_reboiler = TB;
 Psat1 = antoine(TB, Ant1);
 y0 = (gamma1*xb.*Psat1)/P;
 x1 = (v/l)*y0 + (L_rho1/l)*xb;
 
 % Avdrivardel 
-x = zeros(30);
-y = zeros(30);
+x = zeros(1,60);
+y = zeros(1,60);
 x(1) = x1;
 y(1)=y0;
 i = 0; 
@@ -56,7 +59,8 @@ while x<xf
     i = i+1; 
     [gamma1, gamma2] = wilson(x(i),W12,W21);
     Tstart = TB;
-    TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
+    TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+    T(i) = TB;
     Psat1 = antoine(TB, Ant1);                                         % Ångtryck
     y(i) = (gamma1*x(i).*Psat1)/P;
     x(i+1) = (v/l)*y(i) + (B/l)*xb;
@@ -70,7 +74,8 @@ while y(i)<xd
     i=i+1;
     [gamma1, gamma2] = wilson(x(i),W12,W21);
     Tstart = TB;
-    TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart);
+    TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+    T(i) = TB;
     Psat1 = antoine(TB, Ant1);                                      % Ångtryck
     y(i) = (gamma1*x(i).*Psat1)/P;
 end
@@ -96,7 +101,7 @@ trayheight = 0.45; %m
 
 %Densiteter för vätska och gas
 rho_L = ((l_x1*M1)/(l_x1*M1 + l_x2*M2))*L_rho1 + ((l_x2*M2)/(l_x1*M1 + l_x2*M2))*L_rho2; % kg m-3
-rho_V = 10;
+rho_V = v_x1*M1*1e-3*(P*133.322368/(R*TB_reboiler)) + v_x2*M2*1e-3*(P*133.322368/(R*TB_reboiler));
 
 %molmassor
 M_L = l_x1*M1 + l_x2*M2;

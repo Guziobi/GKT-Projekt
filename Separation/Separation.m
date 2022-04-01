@@ -1,15 +1,15 @@
 % Separation
 clc, clear
-options = optimset('Display','off');    % Så att skit inte skrivs ut efter fsolve
+options = optimset('Display','on');    % Så att skit inte skrivs ut efter fsolve
 
 % Data - separation 
 q = 1;             % kokvarmt tillflöde
 F = 100;           % kmol h-1
 P = 2280;           % mmHg (3 atm)
-xf = 0.40;         % molbråk buten
+xf = 0.65;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
-R = 5;              % återflödesförhållande
+R = 10;              % återflödesförhållande
 %Molmassor
 M1 = 56.1063;      % g mol-1
 M2 = 58.1222;      % g mol-1
@@ -100,7 +100,7 @@ Fha = 1; %Hålen är bra
 trayheight = 0.45; %m
 
 %Densiteter för vätska och gas
-rho_L = ((l_x1*M1)/(l_x1*M1 + l_x2*M2))*L_rho1 + ((l_x2*M2)/(l_x1*M1 + l_x2*M2))*L_rho2; % kg m-3
+rho_L = ((l_x1*M1*1e-3)/(l_x1*M1*1e-3 + l_x2*M2*1e-3))*L_rho1 + ((l_x2*M2*1e-3)/(l_x1*M1*1e-3 + l_x2*M2*1e-3))*L_rho2; % kg m-3
 rho_V = v_x1*M1*1e-3*(P*133.322368/(R*TB_reboiler)) + v_x2*M2*1e-3*(P*133.322368/(R*TB_reboiler));
 
 %molmassor
@@ -123,7 +123,7 @@ Uf = C*sqrt((rho_L-rho_V)/rho_V);
 U = vaporveloc*Uf;
 
 %Aktiv area
-Aaktiv = (V*(1/3.6)*M_V*(1/rho_V))/U;
+Aaktiv = (V*(1/3.6)*M_V*1e-3*(1/rho_V))/U;
 
 %Total area
 Atot = Aaktiv/0.8;

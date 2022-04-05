@@ -41,6 +41,12 @@ dFB =  rA;
 dFC =  rA;
 dFD =  0;
 
+% deltaH för A -> B + C
+dH_A = Cp_A(T0-T);
+dH_B = Cp_B(T0-T);
+dH_C = Cp_C(T0-T);
+dH   = dH_B+dH_C-dH_A;
+
 % deltaH för en viss temp ska beräknas via Cp vid en viss temp här för att
 % få en dTdV
 

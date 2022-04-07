@@ -4,7 +4,7 @@ function Cp = Cp_calc(T, CPcoeff)
     C = CPcoeff(3);
     D = CPcoeff(4);
 
-    Cp = A + B*T + C*T^2 + D*T^3;
+    Cp = A + B*T + C*T.^2 + D*T.^3;
 
 end
 

@@ -16,7 +16,7 @@ F_tot = FA + FB + FC + FD;
 % Data
 R  = 8.31447;               % gaskon.
 P  = 1;                     % bar 
-k  = A*exp(-Ea./(R.*T)); % mol/kg cat.*s*bar vid 550 C
+k  = A*exp(-Ea./(R.*T));    % mol/kg cat.*s*bar vid 550 C
 K1 = 22.9;                  % bar^-1.5
 K2 = 7.56;                  % bar^-1
 
@@ -35,7 +35,7 @@ PD = P*(FD/F_tot);
 % Arrenius
 
 % Ke som funktion av T
-Ke =(2.1*10^7) * exp(-122000/(R*T)); % bar
+Ke = (2.1*10^7) * exp(-122000/(R*T)); % bar
 
 % Beräknar rA
 rA = (k.* (PA - (PB*PC/Ke))) ./ (1 + (K1*PB*sqrt(PC)) + (sqrt(K2*PC)));

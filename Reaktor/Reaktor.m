@@ -10,14 +10,12 @@ clc, clear
 % Data
 R = 8.31447;
 rho_cat = 1120; % [kg/m3]
-V = 1; %[m3]
-T_reaktorer = [298 832 298 832]; %K [T1 T2 T3 T4]
+V = 10; %[m3]
+Tin_reak = 750;
 Ea = 141e3; %[J/mol]
 k = 0.0596; % mol/kg cat.*s*bar vid 550 C
 K1 = 22.9; % bar^-1
 K2 = 7.56; % bar^-1
-
-T_reaktorer = [298 750 500 750 500];
 
 CPcoeff_H2O = [72.43 1.039*10^-2 -1.497*10^-6 0 ];
 CPcoeff_H2 = [27.14 0.009274 -1.38*10^-5 7.645*10^-9];
@@ -30,19 +28,12 @@ A = k/exp(-Ea/(823*R));
 % REAKTOR 1
 
 % Cp beräkning
-T = T_reaktorer(2); %K, equlibrium-conversion mot T börjar avta vid denna ~temp
+T = Tin_reak; %K, equlibrium-conversion mot T börjar avta vid denna ~temp
 
-CPcoeff = CPcoeff_H2O;
-CpH2O = Cp_calc(T,CPcoeff);
-
-CPcoeff = CPcoeff_H2;
-CpH2 = Cp_calc(T,CPcoeff);
-
-CPcoeff = CPcoeff_ISOBUTAN;
-CpButan = Cp_calc(T,CPcoeff);
-
-CPcoeff = CPcoeff_ISOBUTEN;
-CpButen = Cp_calc(T,CPcoeff);
+CpH2O = Cp_calc(T,CPcoeff_H2O);
+CpH2 = Cp_calc(T,CPcoeff_H2);
+CpButan = Cp_calc(T,CPcoeff_ISOBUTAN);
+CpButen = Cp_calc(T,CPcoeff_ISOBUTEN);
 
 Cp = [CpButan CpButen CpH2 CpH2O];
 
@@ -52,6 +43,7 @@ dH0_H2      = 0;
 
 dH0         = dH0_Buten+dH0_H2-dH0_Butan;
 
+            %Butan Buten H2 H2O Temp
 U0          = [128 5 0 1091 750];
 
 Vstart = 0; %Volym m3
@@ -62,4 +54,7 @@ Vspan = [Vstart Vfinal];
 % REAKTOR 2
 
 % Cp beräkning
-T = T_reaktorer(4); %K, equlibrium-conversion mot T börjar avta vid denna ~temp
+T = Tin_reak; %K, equlibrium-conversion mot T börjar avta vid denna ~temp
+
+
+plot(V, U(:,1))

@@ -5,13 +5,6 @@ function dUdV = PFR_ode(V, U, Cp, dH0, A, Ea)
 % C = Vätgas   (H2)
 % D = vatten   (H2O)
 
-% Data
-R  = 8.31447;               % gaskon.
-P  = 1;                     % bar 
-k  = @(T) A*exp(-Ea./(R.*T)); % mol/kg cat.*s*bar vid 550 C
-K1 = 22.9;                  % bar^-1.5
-K2 = 7.56;                  % bar^-1
-
 % Hämtar molflöden och temperatur
 FA = U(1); 
 FB = U(2); 
@@ -19,6 +12,13 @@ FC = U(3);
 FD = U(4); 
 T = U(5);
 F_tot = FA + FB + FC + FD;
+
+% Data
+R  = 8.31447;               % gaskon.
+P  = 1;                     % bar 
+k  = A*exp(-Ea./(R.*T)); % mol/kg cat.*s*bar vid 550 C
+K1 = 22.9;                  % bar^-1.5
+K2 = 7.56;                  % bar^-1
 
 % Hämtar Cp
 Cp_A = Cp(1); 
@@ -35,10 +35,10 @@ PD = P*(FD/F_tot);
 % Arrenius
 
 % Ke som funktion av T
-Ke = @(T)(2.1*10^7) * exp(-122000/(R*T)); % bar
+Ke =(2.1*10^7) * exp(-122000/(R*T)); % bar
 
 % Beräknar rA
-rA = (k(T).* (PA - (PB*PC/Ke(T)))) ./ (1 + (K1*PB*sqrt(PC)) + (sqrt(K2*PC)));
+rA = (k.* (PA - (PB*PC/Ke))) ./ (1 + (K1*PB*sqrt(PC)) + (sqrt(K2*PC)));
 
 sumFCp = FA*Cp_A + FB*Cp_B + FC*Cp_C + FD*Cp_D;
 

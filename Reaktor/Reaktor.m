@@ -55,7 +55,7 @@ dH0         = dH0_Buten+dH0_H2-dH0_Butan;
 U0          = [128 5 0 1091 750];
 
 Vstart = 0; %Volym m3
-Vfinal = 10; 
+Vfinal = V; 
 Vspan = [Vstart Vfinal];
 [V,U] = ode15s(@PFR_ode,[Vstart Vfinal],U0,[],Cp,dH0,A,Ea);
 

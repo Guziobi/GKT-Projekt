@@ -1,4 +1,6 @@
-function dUdV = PFR_ode(W,U,dH0,k,K1,K2,P,A,Ea)
+function dUdV = PFR_ode(W, U, dHr0,k,K1,K2,P,Cp)
+
+R  = 8.31447;               % gaskon.
 
 % A = isobutAn (C4H10)
 % B = isobutEn (C4H8)
@@ -13,26 +15,11 @@ FD = U(4);
 T = U(5);
 F_tot = FA + FB + FC + FD;
 
-
-CPcoeff_H2O = [72.43 1.039*10^-2 -1.497*10^-6 0];
-CPcoeff_H2 = [27.14 0.009274 -1.38*10^-5 7.645*10^-9];
-CPcoeff_ISOBUTAN = [-1.39 0.3847 -1.846*10^-4 2.895*10^-8];
-CPcoeff_ISOBUTEN = [16.05 0.2804 -1.091*10^-4 9.098*10^-9];
-
-% Data
-R  = 8.31447;               % gaskon.
-P  = 1;                     % bar 
-k  = A*exp(-Ea./(R.*T));    % mol/kg cat.*s*bar vid 550 C
-K1 = 22.9;                  % bar^-1.5
-K2 = 7.56;                  % bar^-1
-
-CpA = @(T) Cp_calc(T,CPcoeff_ISOBUTAN);
-
-CpB = @(T) Cp_calc(T,CPcoeff_ISOBUTEN);
-
-CpC = @(T) Cp_calc(T,CPcoeff_H2);
-
-CpD = @(T) Cp_calc(T,CPcoeff_H2O);
+% Cp-funktioner beroende av T
+CpA = @(T) Cp_calc(T,Cp(1,:));
+CpB = @(T) Cp_calc(T,Cp(2,:));
+CpC = @(T) Cp_calc(T,Cp(3,:));
+CpD = @(T) Cp_calc(T,Cp(4,:));
 
 %Beräknar partialtryck
 PA = P*(FA/F_tot); 
@@ -41,16 +28,10 @@ PC = P*(FC/F_tot);
 PD = P*(FD/F_tot);
 
 % Ke som funktion av T
-
 Ke = (2.1*10^7) * exp(-122*10^3/(8.314*T)); % bar
 
-Ke = (2.1*10^7) * exp(-122000/(R*T)); % bar
-
-
-% Beräknar rA
+% Beräknar r
 r = k*(PA - ((PB*PC)/Ke))/(1+K1*PB*((PC)^0.5)+(K2*PC)^0.5);
-
-% sumFCp = FA*Cp_A + FB*Cp_B + FC*Cp_C + FD*Cp_D;
 
 % Massbalanser för A -> B + C
 dFA = -r;
@@ -59,7 +40,7 @@ dFC =  r;
 dFD =  0;
 
 % deltaH för A -> B + C
-dHr = dH0 + integral(@(T) CpA(T)-CpB(T)-CpC(T),298.15,T);
+dHr = dHr0 + integral(@(T) CpA(T)-CpB(T)-CpC(T),298.15,T);  % Standardreaktionsentalpin beräknas vid 298.15 K
 
 % Temperaturbalans
 dTdV = r*(-dHr) / ((CpA(T)*FA + CpB(T)*FB + CpC(T)*FC + CpD(T)*FD));

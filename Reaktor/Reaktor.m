@@ -72,9 +72,6 @@ figure (4);
 plot(T2,X2);
 title('Reaktor 2'), xlabel('T [K]'), ylabel('Omsättningsgrad, X')
 
-% KOSTNADSBERÄKNING REAKTOR 2
-ReaktorV2 = Wfinal2./rho_cat; %[m3]
-
 % BÅDA REAKTORERNA
 V = [V1; [V2+V1(end)]]; 
 X = [X1; [X2+X1(end)]]; 

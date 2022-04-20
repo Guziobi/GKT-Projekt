@@ -10,10 +10,10 @@ clc, clear, close all
 % Data
 R = 8.31447;
 P = 1;              % [bar]
-T_reaktor1 = 755;   % [K]
-T_reaktor2 = 755;   % [K]
+T_reaktor1 = 1000;   % [K]
+T_reaktor2 = 1000;   % [K]
 rho_cat = 1120;     % [kg m3^-1]
-W = 5600;           % [kg]
+W = 7850;           % [kg]
 Ea = 141e3;         % [J mol^-1]
 k = 0.0596;         % [mol kg cat.^-1 s^-1 bar^-1 vid 550 C]
 K1 = 22.9;          % [bar^-1]
@@ -32,7 +32,7 @@ dH0C   = 0;              % [kJ mol^-1]
 dHr0   = dH0B+dH0C-dH0A; % [kJ mol^-1]
 
 % REAKTOR 1
-U01 = [140/3.6 6/3.6 0 1190/3.6 T_reaktor1]; %[mol s^-1]
+U01 = [168/3.6 6/3.6 0 1680/3.6 T_reaktor1]; %[mol s^-1]
 
 Wstart1 = 0; %Massa cat. [kg]
 Wfinal1 = W; 
@@ -56,7 +56,7 @@ title('Reaktor 1'), xlabel('T [K]'), ylabel('Omsättningsgrad, X')
 % REAKTOR 2
 U02 = [U1(1,1) U1(1,2) U1(1,3) U1(1,4) T_reaktor2];
 Wstart2 = 0; %Massa cat. [kg]
-Wfinal2 = 5600; 
+Wfinal2 = 7850; 
 Wspan2 = [Wstart2 Wfinal2];
 [W2,U2] = ode15s(@PFR_ode,Wspan2,U02,[],dHr0,k,K1,K2,P,Cp);
 

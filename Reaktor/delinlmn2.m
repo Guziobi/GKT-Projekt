@@ -54,7 +54,7 @@ Wspan2 = [Wstart2 Wfinal2];
 X2 = (U2(1,1)-U2(:,1))/U2(1,1);
 T2 = U2(:,5); %[K]
 
-V2= W2./rho_cat; %[m3]
+V2 = W2./rho_cat; %[m3]
 
 % BÅDA REAKTORERNA
 W = [W1; [W2+W1(end)]]; % [kg]

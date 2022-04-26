@@ -70,6 +70,72 @@ figure(2);
 plot(X,T)
 title('Reaktor 1 och 2'),xlabel('Omsättningsgrad, X'),ylabel('T [K]')
 
+%% Tryckkätlsväggens (reaktorväggens) tjocklek
+
+% KOLLA PÅ Smin VID HORISONTELL REAKTOR FÖR REAKTOR 1 OCH 2,
+% mass_wall<Smin!!!
+
+% REKTOR 1
+T_F1 = (9/5)*(T_reaktor1-273.15)+32; % Temperatur i Farenheit, om över 900F måste rostfritt stål användas, max 1500F
+Vol1 = Wfinal1./rho_cat;
+rad1 = (Vol1/(4*pi)).^(1/3); % Radie på reaktor 1 [m]
+D1 = 2*rad1; % Diameter på reaktor 1 [m]
+Smax = 74.5*10^6; % Maximalt tillåtna spänningen över 900F [N/m2]
+P_konc = P*10^5*1.1; % Konstruktionstryck, 10% mer än arbetstryck [Pa]
+wall1= (P_konc*D1)./((2*Smax*1)-(1.2*P_konc)); %[m]
+if D1<=2
+    if wall1<7
+        wall1=7;
+    end
+end
+if D1>2 && D1<=2.5
+    if wall1<9
+        wall1=9;
+    end
+end
+Mantel1 = 8*pi*(rad1^2);
+V_wall1 = Mantel1*(wall1*10^-3); %[m3]
+rho_wall = 8000; %[kg/m3]
+mass_wall1 = V_wall1./rho_wall; %[kg]
+% Horisontell reaktor
+a = 12800;
+b = 73;
+n = 0.85;
+cost_reak1 = a+(b*(mass_wall1^n)); % Kostnad för reaktor 1 år 2010 (CEPCI = 532.9)
+cost_reak1_cat = cost_reak1*1.5; % Kostnad för reaktor 1 + katalysator år 2010 (CEPCI = 532.9)
+cost1_2020 = (cost_reak1_cat*(569/532.9))*9.99*4; % Kostnad för reaktor 1 + katalysator samt montering år 2020 i SEK
+disp(['Kostnad för reaktor 1 år 2020 (SEK):   ',num2str(cost1_2020)]), disp(' ')
+%% REAKTOR 2
+T_F2 = (9/5)*(T_reaktor2-273.15)+32; % Temperatur i Farenheit, om över 900F måste rostfritt stål användas, max 1500F
+Vol2 = Wfinal2./rho_cat;
+rad2 = (Vol2/(4*pi)).^(1/3); % Radie på reaktor 1 [m]
+D2 = 2*rad2; % Diameter på reaktor 1 [m]
+Smax = 74.5*10^6; % Maximalt tillåtna spänningen över 900F [N/m2]
+P_konc = P*10^5*1.1; % Konstruktionstryck, 10% mer än arbetstryck [Pa]
+wall2= (P_konc*D2)./((2*Smax*1)-(1.2*P_konc)); %[m]
+if D2<=2
+    if wall2<7
+        wall2=7;
+    end
+end
+if D2>2 && D2<=2.5
+    if wall2<9
+        wall2=9;
+    end
+end
+Mantel2 = 8*pi*(rad2^2);
+V_wall2 = Mantel2*(wall2*10^-3); %[m3]
+rho_wall = 8000; %[kg/m3]
+mass_wall2 = V_wall2./rho_wall; %[kg]
+% Horisontell reaktor
+a = 12800;
+b = 73;
+n = 0.85;
+cost_reak2 = a+(b*(mass_wall2^n)); % Kostnad för reaktor 1 år 2010 (CEPCI = 532.9)
+cost_reak2_cat = cost_reak2*1.5; % Kostnad för reaktor 1 + katalysator år 2010 (CEPCI = 532.9)
+cost2_2020 = (cost_reak2_cat*(569/532.9))*9.99*4; % Kostnad för reaktor 1 + katalysator samt montering år 2020 i SEK
+disp(['Kostnad för reaktor 2 år 2020 (SEK):   ',num2str(cost2_2020)]), disp(' ')
+%%
 % Plottar 
 
 function dUdV = PBR_ode(W, U, dHr0,k,K1,K2,P,Cp)

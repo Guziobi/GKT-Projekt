@@ -52,23 +52,38 @@ T2 = U2(:,5); %[K]
 V2 = W2./rho_cat; %[m3]
 
 % BÅDA REAKTORERNA
-U = [U1;U2];
+U = [U1; U2([2:end],:)];
 X = (U(1,1)-U(:,1))/U(1,1);
-W = [W1; [W2+W1(end)]]; % [kg]
-T = [T1; T2];           % [K]
-V = [V1; [V2+V1(end)]]; % [m3]
+W = [W1; [W2([2:end],:)+W1(end)]]; % [kg]
+T = [T1; T2([2:end],:)];           % [K]
+V = [V1; [V2([2:end],:)+V1(end)]]; % [m3]
+
+FA = U(:,1);
+FB = U(:,2);
+FC = U(:,3); 
+
+% PLOTTAR:
 
 % Plottar omsättningsgraden mot massan katalysator för de båda reaktorerna
 figure(1);
 plot(W,X)
-title('Reaktor 1 och 2'),xlabel('W [kg]'), ylabel('Omsättningsgrad, X')
+title('Reaktor 1 och 2'),xlabel('Katalysatormassa, W [kg]'), ylabel('Omsättningsgrad, X')
 hold on
-plot([Wfinal1 Wfinal1],[0 1],'k--')
+plot([Wfinal1 Wfinal1],[0 1],'k--')     % Avgränsning mellan reaktor 1 och 2
 
 % Plottar temperaturen mot omsättningsgraden för de båda reaktorerna
 figure(2);
 plot(X,T)
 title('Reaktor 1 och 2'),xlabel('Omsättningsgrad, X'),ylabel('T [K]')
+
+% Plottar molflöden för de olika specierna
+figure(3);
+plot(W,FA,W,FB)
+hold on
+plot([Wfinal1 Wfinal1],[0 40],'k--')   % Avgränsning mellan reaktor 1 och 2
+title('Molflöde för specier vs Katalysatormassa')
+xlabel('Katalysatormassa, W [kg]'), ylabel('Molflöde [mol/s]')
+legend('isobutan','isobuten och vätgas')
 
 %% Tryckkätlsväggens (reaktorväggens) tjocklek
 
@@ -105,6 +120,7 @@ cost_reak1 = a+(b*(mass_wall1^n)); % Kostnad för reaktor 1 år 2010 (CEPCI = 53
 cost_reak1_cat = cost_reak1*1.5; % Kostnad för reaktor 1 + katalysator år 2010 (CEPCI = 532.9)
 cost1_2020 = (cost_reak1_cat*(569/532.9))*9.99*4; % Kostnad för reaktor 1 + katalysator samt montering år 2020 i SEK
 disp(['Kostnad för reaktor 1 år 2020 (SEK):   ',num2str(cost1_2020)]), disp(' ')
+
 %% REAKTOR 2
 T_F2 = (9/5)*(T_reaktor2-273.15)+32; % Temperatur i Farenheit, om över 900F måste rostfritt stål användas, max 1500F
 Vol2 = Wfinal2./rho_cat;

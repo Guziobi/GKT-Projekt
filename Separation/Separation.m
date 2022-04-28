@@ -104,7 +104,7 @@ plot(xeq,yeq)
 xlabel('x_1'), ylabel('y_1')
 axis([0 1 0 1])
 
-legend('Jämviktskurva', 'Referenslinje','Location','northwest')
+legend('Referenslinje', 'Jämviktskurva','Location','northwest')
 
 figure(2);
 plot(xeq,yeq)

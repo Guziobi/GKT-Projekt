@@ -60,22 +60,8 @@ x(1) = x1;
 y(1)=y0;
 i = 0; 
 
-% Jämviktkurva och jämviktsplot
-xeq = 0:0.001:1;    
-[gamma1, gamma2] = wilson(xeq,W12,W21);
-Tstart = linspace(-6.3+273.15,-1+273.15,1001);
-TBeq=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
-Psat1 = antoine(TBeq, Ant1);                                            % Ångtryck
-yeq = (gamma1.*xeq.*Psat1)./P;
-
-plot(xeq,xeq)   % Referenslinje
-hold on
-plot(xeq,yeq)
-xlabel('x_1'), ylabel('y_1')
-axis([0 1 0 1])
-legend('Jämviktskurva', 'Referenslinje','Location','northwest')
-
 % Sorels metod
+% Avdrivare
 while x<xf
     i = i+1; 
     [gamma1, gamma2] = wilson(x(i),W12,W21);
@@ -102,6 +88,46 @@ while y(i)<xd
 end
 
 bottnar = i/0.7;
+
+% Jämviktkurva och jämviktsplot
+xeq = 0:0.001:1;    
+[gamma1, gamma2] = wilson(xeq,W12,W21);
+Tstart = linspace(-6.3+273.15,-1+273.15,1001);
+TBeq=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+Psat1 = antoine(TBeq, Ant1);                                            % Ångtryck
+yeq = (gamma1.*xeq.*Psat1)./P;
+
+figure(1);
+plot(xeq,xeq)   % Referenslinje
+hold on
+plot(xeq,yeq)
+xlabel('x_1'), ylabel('y_1')
+axis([0 1 0 1])
+
+legend('Jämviktskurva', 'Referenslinje','Location','northwest')
+
+figure(2);
+plot(xeq,yeq)
+xlabel('x_1'), ylabel('y_1')
+axis([0 1 0 1])
+hold on
+
+% Plottar stegning och driftlinjer
+plot((V/L)*yeq(890:end) + (1/L)*(B*xb-F*xf),yeq(890:end)) % Förstärkardel (övre driftlinje)
+plot((v/l)*yeq(1:890) + (B/l)*xb,yeq(1:890))
+
+plot([x(1) x(2)],[y(1),y(1)],'k')
+plot([x(1) x(1)],[0.10 y(1)],'k')
+% plot([x(1) x(1)],[y(2),y(1)],'k')
+for n=2:i-1
+     plot([x(n) x(n+1)],[y(n),y(n)],'k')
+end
+
+for n=2:i-1
+     plot([x(n) x(n)],[y(n-1),y(n)],'k')
+end
+
+legend('Jämviktskurva', 'Övre driftlinje','Nedre driftlinje','Location','northwest')
 
 %% Dimensionering
 

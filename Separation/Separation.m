@@ -1,18 +1,24 @@
 % Separation
 clc, clear
-options = optimset('Display','on');    % Så att skit inte skrivs ut efter fsolve
+options = optimset('Display','off');    % Så att skit inte skrivs ut efter fsolve
 
 % Data - separation 
 q = 1;             % kokvarmt tillflöde
-F = 100;           % kmol h-1
-P = 2280;           % mmHg (3 atm)
-xf = 0.65;         % molbråk buten
+F = 131;           % kmol h-1
+P = 2280;          % mmHg (3 atm)
+xf = 0.8969;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
-R = 10;              % återflödesförhållande
+R = 5;            % återflödesförhållande
 %Molmassor
 M1 = 56.1063;      % g mol-1
 M2 = 58.1222;      % g mol-1
+% Molmassor
+M1 = 56.1063;       % g mol-1
+M2 = 58.1222;       % g mol-1
+% Kokpunkter
+Tb_1 = -6.3+273.15; % K   (buten)
+Tb_2 = -1+273.15;   % K   (butan)
 
 
 %Antoinekonstanter A  B  C
@@ -54,7 +60,22 @@ x(1) = x1;
 y(1)=y0;
 i = 0; 
 
+% Jämviktkurva och jämviktsplot
+xeq = 0:0.001:1;    
+[gamma1, gamma2] = wilson(xeq,W12,W21);
+Tstart = linspace(-6.3+273.15,-1+273.15,1001);
+TBeq=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+Psat1 = antoine(TBeq, Ant1);                                            % Ångtryck
+yeq = (gamma1.*xeq.*Psat1)./P;
 
+plot(xeq,xeq)   % Referenslinje
+hold on
+plot(xeq,yeq)
+xlabel('x_1'), ylabel('y_1')
+axis([0 1 0 1])
+legend('Jämviktskurva', 'Referenslinje','Location','northwest')
+
+% Sorels metod
 while x<xf
     i = i+1; 
     [gamma1, gamma2] = wilson(x(i),W12,W21);
@@ -79,6 +100,8 @@ while y(i)<xd
     Psat1 = antoine(TB, Ant1);                                      % Ångtryck
     y(i) = (gamma1*x(i).*Psat1)/P;
 end
+
+bottnar = i/0.7;
 
 %% Dimensionering
 
@@ -132,9 +155,9 @@ Atot = Aaktiv/0.8;
 d = 2*sqrt(Atot/pi);
 
 %Kolonnens höjd
-h = trayheight * (i + 1);
+h = trayheight * (bottnar + 1);
 
-%% del 2
+%% Värmen
 
 Hvap1 = 20.6e3;  % j mol-1
 Hvap2 = 19.99e3; % j mol-1
@@ -143,10 +166,25 @@ Hvap2 = 19.99e3; % j mol-1
 Q_condensor = (Hvap1*V*1e3*x(end) + Hvap2*V*1e3*(1-x(end))) * 3600^-1;    % W
 Q_reboiler = (Hvap1*v*1e3*y0 + Hvap2*v*1e3*(1-y0)) * 3600^-1;             % W
 
+%% Kostnader
+
+% Parametrar givna i PM
+Param = [130 440 1.8        % sieve tray
+         210 400 1.9        % valve tray
+         340 400 1.9];      % bubble cap tray
+     
+kurs = 9.99;                % Växelkursen sek/dollar
+lang = 4;                   % Langfaktorn
+index = 596/532.9;
+     
+kostnad_sieve = Cost(d,Param(1,:))*kurs*lang*index*bottnar
+kostnad_valve = Cost(d,Param(2,:))*kurs*lang*index*bottnar
+kostnad_bubble = Cost(d,Param(3,:))*kurs*lang*index*bottnar
+
 
 %% UTSKRIVNING AV RESULTAT
 disp([' ' ])
-disp(['Ideala steg:               ' num2str(i)])
+disp(['Ideala steg:               ' num2str(bottnar)])
 disp(['Diameter på tornet:        ' num2str(d)])
 disp(['Höjd på tornet:            ' num2str(h)])
 disp([' ' ])
@@ -199,4 +237,12 @@ y2 = ((1-x1).*gamma2.*P2)./P;
 
 res=y1+y2-1;
 
+end
+
+function kostnad = Cost(S,Param)
+    a = Param(1);
+    b = Param(2);
+    n = Param(3);
+    
+    kostnad = a + b*S.^n;
 end

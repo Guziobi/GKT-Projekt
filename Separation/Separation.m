@@ -1,19 +1,18 @@
 % Separation
 clc, clear
-options = optimset('Display','on');    % Så att skit inte skrivs ut efter fsolve
+options = optimset('Display','off');    % Så att skit inte skrivs ut efter fsolve
 
 % Data - separation 
 q = 1;             % kokvarmt tillflöde
-F = 100;           % kmol h-1
-P = 2280;           % mmHg (3 atm)
-xf = 0.65;         % molbråk buten
+F = 131;           % kmol h-1
+P = 2280;          % mmHg (3 atm)
+xf = 0.8969;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
-R = 10;              % återflödesförhållande
+R = 5;            % återflödesförhållande
 %Molmassor
 M1 = 56.1063;      % g mol-1
 M2 = 58.1222;      % g mol-1
-
 
 %Antoinekonstanter A  B  C
 Ant1 =  [15.7564 2132.42 -33.15];  % buten

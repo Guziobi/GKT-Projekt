@@ -20,6 +20,7 @@ M2 = 58.1222;       % g mol-1
 Tb_1 = -6.3+273.15; % K   (buten)
 Tb_2 = -1+273.15;   % K   (butan)
 
+
 %Antoinekonstanter A  B  C
 Ant1 =  [15.7564 2132.42 -33.15];  % buten
 Ant2 =  [15.6782 2154.90 -34.42];  % butan 

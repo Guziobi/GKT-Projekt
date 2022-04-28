@@ -100,11 +100,7 @@ title('Molflöde för specier vs katalysatormassa')
 xlabel('Katalysatormassa, W [kg]'), ylabel('Molflöde [mol/s]')
 legend('isobutan','isobuten och vätgas')
 
-%% Tryckkätlsväggens (reaktorväggens) tjocklek
-
-% KOLLA PÅ Smin VID HORISONTELL REAKTOR FÖR REAKTOR 1 OCH 2,
-% mass_wall<Smin!!!
-
+% Tryckkätlsväggens (reaktorväggens) tjocklek
 % REKTOR 1
 T_F1 = (9/5)*(T_reaktor1-273.15)+32; % Temperatur i Farenheit, om över 900F måste rostfritt stål användas, max 1500F
 Vol1 = Wfinal1./rho_cat;
@@ -127,7 +123,7 @@ Mantel1 = 8*pi*(rad1^2);
 V_wall1 = Mantel1*(wall1*10^-3); %[m3]
 rho_wall = 8000; %[kg/m3]
 mass_wall1 = V_wall1.*rho_wall; %[kg]
-% Horisontell reaktor
+% Horisontell reaktor pris
 a = 12800;
 b = 73;
 n = 0.85;
@@ -163,7 +159,7 @@ Mantel_alt = 8*pi*(rad_alt^2);
 V_wall_alt = Mantel_alt*(wall_alt*10^-3); %[m3]
 rho_wall = 8000; %[kg/m3]
 mass_wall_alt = V_wall_alt.*rho_wall; %[kg]
-% Horisontell reaktor
+% Horisontell reaktor pris
 a = 12800;
 b = 73;
 n = 0.85;

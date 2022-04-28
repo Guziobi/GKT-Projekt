@@ -5,10 +5,13 @@ clc, clear
 
 %Data
 k = 0.107; %m s-1 @8bar
-% Ångflöde in
-V = 1300; %kmol/h
+% Kokvarm ström in
+T = 1558.5; %kmol/h
 %Vätskeflöde från tanken
-L = 1100; %kmol/h
+L = 1310; %kmol/h
+% Ångflöde ut
+V = T-L; %kmol/h
+
 %uppehållstid
 tau = 1/6; % h (10min)
 
@@ -25,3 +28,14 @@ HL = (L*tau)/((pi*D^2)/4);
 
 %Höjd flashtank
 H = HL + 1.5*D;
+
+
+%% tank 2
+T2 = V;
+V2 = 32.6381;
+L2 = T2-V2;
+
+disp(['Diameter tank 1:               ' num2str(D)])
+disp(['Diameter på tornet:        ' num2str(d)])
+disp(['Höjd på tornet:            ' num2str(h)])
+disp([' ' ])

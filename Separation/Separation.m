@@ -1,12 +1,12 @@
-% Separation
-clc, clear
+%% SEPARATION
+clc, clear, close all
 options = optimset('Display','off');    % Så att skit inte skrivs ut efter fsolve
 
 % Data - separation 
 q = 1;             % kokvarmt tillflöde
-F = 131;           % kmol h-1
+F = 133;           % kmol h-1
 P = 2280;          % mmHg (3 atm)
-xf = 0.8969;         % molbråk buten
+xf = 0.88051;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
 R = 5;            % återflödesförhållande
@@ -87,7 +87,8 @@ while y(i)<xd
     y(i) = (gamma1*x(i).*Psat1)/P;
 end
 
-bottnar = i/0.7;
+bottnar_ideal = i;
+bottnar_verklig = i/0.7;
 
 % Jämviktkurva och jämviktsplot
 xeq = 0:0.001:1;    
@@ -118,7 +119,6 @@ plot((v/l)*yeq(1:890) + (B/l)*xb,yeq(1:890))
 
 plot([x(1) x(2)],[y(1),y(1)],'k')
 plot([x(1) x(1)],[0.10 y(1)],'k')
-% plot([x(1) x(1)],[y(2),y(1)],'k')
 for n=2:i-1
      plot([x(n) x(n+1)],[y(n),y(n)],'k')
 end
@@ -181,7 +181,17 @@ Atot = Aaktiv/0.8;
 d = 2*sqrt(Atot/pi);
 
 %Kolonnens höjd
-h = trayheight * (bottnar + 1);
+h = trayheight * (bottnar_verklig + 1);
+
+% Kärlets tjocklek
+P_konstr = 1.1*P*133.322368;
+Smax = [88.9 137.9]*10^6;                              % Maximal tillåten spänning ( kolstål / rostfritt stål )
+E = 1;                                                 % Svetsverkningsgrad
+rho_wall = [7900 8000];                                % Densitet ( kolstål / rostfritt stål )
+t = ((P_konstr*d)./((2*Smax*E)-(1.2*P_konstr))).*10^3; %[mm]
+
+Vwall_dest = pi.*((d+2.*t*10^-3)/2).^2.*2.*(d+2.*t*10^-3) - pi*(d/2)^2*2*d;
+mwall_dest = Vwall_dest.*rho_wall;
 
 %% Värmen
 
@@ -194,45 +204,67 @@ Q_reboiler = (Hvap1*v*1e3*y0 + Hvap2*v*1e3*(1-y0)) * 3600^-1;             % W
 
 %% Kostnader
 
+% Bottnar
 % Parametrar givna i PM
-Param = [130 440 1.8        % sieve tray
-         210 400 1.9        % valve tray
-         340 400 1.9];      % bubble cap tray
+Param_bottnar = [130 440 1.8        % sieve tray
+                 210 400 1.9                % valve tray
+                 340 400 1.9];              % bubble cap tray
      
-kurs = 9.99;                % Växelkursen sek/dollar
-lang = 4;                   % Langfaktorn
+kurs = 9.99;                        % Växelkursen sek/dollar
+lang = 4;                           % Langfaktorn
 index = 596/532.9;
-     
-kostnad_sieve = Cost(d,Param(1,:))*kurs*lang*index*bottnar
-kostnad_valve = Cost(d,Param(2,:))*kurs*lang*index*bottnar
-kostnad_bubble = Cost(d,Param(3,:))*kurs*lang*index*bottnar
 
+kostnad_sieve = Cost(d,Param_bottnar(1,:))*kurs*lang*index*bottnar_verklig;
+kostnad_valve = Cost(d,Param_bottnar(2,:))*kurs*lang*index*bottnar_verklig;
+kostnad_bubble = Cost(d,Param_bottnar(3,:))*kurs*lang*index*bottnar_verklig;
+
+% Skalmassa
+Param_skalmassa = [10200 31 0.85
+                   12800 73 0.85];
+
+kostnad_colonwall_kol = Cost(mwall_dest(1),Param_skalmassa(1,:));
+kostnad_colonwall_rostfri = Cost(mwall_dest(2),Param_skalmassa(2,:));
 
 %% UTSKRIVNING AV RESULTAT
-disp([' ' ])
-disp(['Ideala steg:               ' num2str(bottnar)])
-disp(['Diameter på tornet:        ' num2str(d)])
-disp(['Höjd på tornet:            ' num2str(h)])
+disp(['Antal ideala bottnar             ' num2str(bottnar_ideal)])
+disp(['Antal verkliga  bottnar          ' num2str(bottnar_verklig)])
+disp(['Diameter på tornet:              ' num2str(d)])
+disp(['Höjd på tornet:                  ' num2str(h)])
 disp([' ' ])
 
 % Vapour and liquid flowrates in kmol h^-1
-disp(['L (förstärkardel):         ' num2str(L)])
-disp(['V (förstärkardel):         ' num2str(V)])
-disp(['L (avdrivardel):           ' num2str(l)])
-disp(['V (avdrivardell):          ' num2str(v)])
+disp(['L (förstärkardel):               ' num2str(L)])
+disp(['V (förstärkardel):               ' num2str(V)])
+disp(['L (avdrivardel):                 ' num2str(l)])
+disp(['V (avdrivardel):                 ' num2str(v)])
 disp([' ' ])
 
 % Värmen
-disp(['Condenser duty (MW)        ' num2str(Q_condensor*10^-6)])
-disp(['Reboiler duty (MW)         ' num2str(Q_reboiler*10^-6)])
+disp(['Condenser duty (MW)              ' num2str(Q_condensor*10^-6)])
+disp(['Reboiler duty (MW)               ' num2str(Q_reboiler*10^-6)])
 disp([' ' ])
 
 % Factors from correlation
-disp(['F_LV                       ' num2str(Flv)])
-disp(['C_F (ft s^-1)              ' num2str(Cf/0.3048)])
+disp(['F_LV                             ' num2str(Flv)])
+disp(['C_F (ft s^-1)                    ' num2str(Cf/0.3048)])
 disp([' ' ])
 
+% Kostnad bottnar
+disp(['Kostnad (sieve) (kr)             ' num2str(kostnad_sieve)])
+disp(['Kostnad (valve) (kr)             ' num2str(kostnad_valve)])
+disp(['Kostnad (bubble) (kr)            ' num2str(kostnad_bubble)])
 
+
+% Väggtjocklek och pris på kolonn
+disp(['Volym (kolstål) (m^3)            ' num2str(Vwall_dest(1))])
+disp(['Volym (rostfritt stål) (m^3)     ' num2str(Vwall_dest(2))])
+disp(['Massa (kolstål) (kg)             ' num2str(mwall_dest(1))])
+disp(['Massa (rostfritt stål) (kg)      ' num2str(mwall_dest(2))])
+disp([' ' ])
+disp(['Kostnad (kolstål) (kr)           ' num2str(kostnad_colonwall_kol)])
+disp(['Kostnad (rostfritt stål) (kr)    ' num2str(kostnad_colonwall_rostfri)])
+
+%% Funktioner separation
 function [gamma1, gamma2] = wilson(x1,W12,W21)
     x2 = 1 - x1;
 

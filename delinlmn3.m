@@ -116,18 +116,15 @@ Smax = 74.5E6;                                            % Maximalt tillåtna s
 P_konstr = P*10^5*1.1;                                    % Konstruktionstryck, 10% mer än arbetstryck [Pa]
 E = 1;                                                    % Svetsverkningsgrad
 wall1= ((P_konstr*D1)/((2*Smax*E)-(1.2*P_konstr))).*10^3; %[mm]
-rho_wall = [7900 8000];  
+rho_wall = [7900 8000];
 
-% if D1<=2
-%     if wall1<7
-%         wall1=7;
-%     end
-% end
-% if D1>2 && D1<=2.5
-%     if wall1<9
-%         wall1=9;
-%     end
-% end
+if D1 < 1
+    wall1 = 6;
+elseif D1 >= 1 && D1 < 2
+        wall1 = 7;
+elseif D1 >= 2 && D1 < 2.5
+     wall1 = 9;
+end
 
 Mantel1 = 8*pi*(rad1^2);
 V_wall1 = Mantel1*(wall1*10^-3);        %[m3]
@@ -145,23 +142,15 @@ T_Falt = (9/5)*(T_reaktor1-273.15)+32;                           % Temperatur i 
 Vol_alt = Wfinal_alt1./rho_cat;
 rad_alt = (Vol_alt/(4*pi)).^(1/3);                               % Radie på reaktor 1 [m]
 D_alt = 2*rad_alt;                                               % Diameter på reaktor 1 [m]
-wall_alt= ((P_konstr*D_alt)./((2*Smax*1)-(1.2*P_konstr))).*10^3; %[mm]
+wall_alt = ((P_konstr*D_alt)./((2*Smax*1)-(1.2*P_konstr))).*10^3; %[mm]
 
-% if D_alt<=2
-%     if wall_alt<7
-%         wall_alt=7;
-%     end
-% end
-% if D_alt>2 && D_alt<=2.5
-%     if wall_alt<9
-%         wall_alt=9;
-%     end
-% end
-% if D_alt>2.5 && D_alt<=3
-%      if wall_alt<10
-%         wall_alt=10;
-%     end
-% end
+if D_alt < 1
+    wall_alt = 6;
+elseif D_alt >= 1 && D_alt < 2
+   wall_alt = 7;
+elseif D_alt >= 2 && D_alt < 2.5
+   wall_alt = 9;
+end
 
 Mantel_alt = 8*pi*(rad_alt^2);
 V_wall_alt = Mantel_alt*(wall_alt*10^-3);   %[m3]
@@ -179,16 +168,13 @@ rad2 = (Vol2/(4*pi)).^(1/3);                                % Radie på reaktor 
 D2 = 2*rad2;                                                % Diameter på reaktor 1 [m]
 wall2= ((P_konstr*D2)./((2*Smax*1)-(1.2*P_konstr))).*10^3;  % [mm]
 
-% if D2<=2
-%     if (wall2)<7
-%         wall2=7;
-%     end
-% end
-% if D2>2 && D2<=2.5
-%     if wall2<9
-%         wall2=9;
-%     end
-% end
+if D2 < 1
+    wall2 = 6;
+elseif D2 >= 1 && D2 < 2
+    wall2 = 7;
+elseif D2 >= 2 && D2 < 2.5
+    wall2 = 9;
+end
 
 Mantel2 = 8*pi*(rad2^2);
 V_wall2 = Mantel2*(wall2.*10^-3);   %[m3]
@@ -200,7 +186,9 @@ cost_reak2_cat = cost_reak2*1.5;                         % Kostnad för reaktor 
 cost2_2020 = (cost_reak2_cat*(569/532.9))*9.99*4;        % Kostnad för reaktor 1 + katalysator samt montering år 2020 i SEK
 cost_allareakt = cost1_2020 + cost2_2020;
 
-%% Utskrivning av resultat
+%% Utskrivning av resultat: Reaktor
+disp(['REAKTOR:'])
+disp([' ' ])
 
 % Ut ur reaktor 1
 disp(['__________________Utflödesresultat (reaktor 1)________________'])
@@ -229,14 +217,254 @@ disp(['Volym (m^3) TOTAL:                                ',num2str(Vol1+Vol2)])
 disp(['xf:                                               ',num2str(xf)])
 disp([' '])
 
-
-
 % Reaktorkostnad
 disp(['______________________Reaktorkostnader________________________'])
 disp(['Kostnad för reaktor 1 år 2020 (SEK):              ',num2str(cost1_2020)])
 disp(['Kostnad för alternativ reaktor 1 år 2020 (SEK):   ',num2str(cost_alt_2020)])
 disp(['Kostnad för reaktor 2 år 2020 (SEK):              ',num2str(cost2_2020)])
 disp(['Kostnad för reaktor 1 och 2 år 2020 (SEK):        ',num2str(cost_allareakt)])
+disp(['_________________________________-____________________________'])
+
+disp([' ' ])
+
+%% SEPARATION
+options = optimset('Display','off');    % Så att skit inte skrivs ut efter fsolve
+
+% Data - separation 
+q = 1;             % kokvarmt tillflöde
+F = 133;           % kmol h-1
+P = 2280;          % mmHg (3 atm)
+xf = 0.88051;         % molbråk buten
+xd = 0.95;         % destillatbråk 
+xb = 0.05;         % bottenbråk
+R = 3.25;            % återflödesförhållande
+%Molmassor
+M1 = 56.1063;      % g mol-1
+M2 = 58.1222;      % g mol-1
+% Kokpunkter
+Tb_1 = -6.3+273.15; % K   (buten)
+Tb_2 = -1+273.15;   % K   (butan)
+
+
+%Antoinekonstanter A  B  C
+Ant1 =  [15.7564 2132.42 -33.15];  % buten
+Ant2 =  [15.6782 2154.90 -34.42];  % butan 
+%Wilsonfaktorer
+W12 = 0.48584; 
+W21 = 1.64637; 
+%Densiteter
+L_rho1 = 559.0;          % kgm-3 Buten
+L_rho2 = 556.62;         % kgm-3 Butan
+%Ytspänning
+surfaceten = 24;          % dyn cm-1
+    
+% Beräkning av flöden 
+B = F*((xf-xd)/(xb-xd));
+D = F-B;
+
+L = R*D; 
+V = L+D;
+
+l = L + q*F;    % L-streck
+v = l-B;        % V-streck
+
+% Återkokare 
+T = zeros(1,30);
+[gamma1, gamma2] = wilson(xb,W12,W21);
+Tstart = 273.15;
+TB=fsolve(@(T)find_Tb(T,xb,gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+TB_reboiler = TB;
+Psat1 = antoine(TB, Ant1);
+y0 = (gamma1*xb.*Psat1)/P;
+x1 = (v/l)*y0 + (L_rho1/l)*xb;
+
+% Avdrivardel 
+x = zeros(1,60);
+y = zeros(1,60);
+x(1) = x1;
+y(1)=y0;
+i = 0; 
+
+% Sorels metod
+% Avdrivare
+while x<xf
+    i = i+1; 
+    [gamma1, gamma2] = wilson(x(i),W12,W21);
+    Tstart = TB;
+    TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+    T(i) = TB;
+    Psat1 = antoine(TB, Ant1);                                         % Ångtryck
+    y(i) = (gamma1*x(i).*Psat1)/P;
+    x(i+1) = (v/l)*y(i) + (B/l)*xb;
+end
+
+m = i+1;
+
+% Förstärkare
+while y(i)<xd
+    x(i+1)= (V/L)*y(i) + (1/L)*(B*xb-F*xf);                        % Komponentbalans över förstärkardelen
+    i=i+1;
+    [gamma1, gamma2] = wilson(x(i),W12,W21);
+    Tstart = TB;
+    TB=fsolve(@(T)find_Tb(T,x(i),gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+    T(i) = TB;
+    Psat1 = antoine(TB, Ant1);                                      % Ångtryck
+    y(i) = (gamma1*x(i).*Psat1)/P;
+end
+
+bottnar_ideal = i;
+bottnar_verklig = round(i/0.7);
+
+% Jämviktkurva och jämviktsplot
+xeq = 0:0.001:1;    
+[gamma1, gamma2] = wilson(xeq,W12,W21);
+Tstart = linspace(-6.3+273.15,-1+273.15,1001);
+TBeq=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant1,Ant2,P),Tstart,options);
+Psat1 = antoine(TBeq, Ant1);                                            % Ångtryck
+yeq = (gamma1.*xeq.*Psat1)./P;
+
+figure(4);
+plot(xeq,xeq)   % Referenslinje
+hold on
+plot(xeq,yeq)
+xlabel('x_1'), ylabel('y_1')
+axis([0 1 0 1])
+
+legend('Referenslinje', 'Jämviktskurva','Location','northwest')
+
+%% Dimensionering
+
+% Sammansättning ut ur återkokare
+v_x1 = y0;              % Buten
+v_x2 = 1-y0;            % Butan
+% Sammansättning in i återkokare
+l_x1 = x(1);
+l_x2 = 1 - x(1);
+
+% Flödesfaktorer
+surftention = 15.28;        %dyn cm-1
+Fst = (surftention/20)^0.2;
+vaporveloc = 0.7;
+Ff = 1; %nono-foaming
+Fha = 1; %Hålen är bra
+
+%Bottenavstånd
+trayheight = 0.45; %m
+
+%Densiteter för vätska och gas
+R = 8.314;
+rho_L = ((l_x1*M1*1e-3)/(l_x1*M1*1e-3 + l_x2*M2*1e-3))*L_rho1 + ((l_x2*M2*1e-3)/(l_x1*M1*1e-3 + l_x2*M2*1e-3))*L_rho2; % kg m-3
+rho_V = v_x1*M1*1e-3*(P*133.322368/(R*TB_reboiler)) + v_x2*M2*1e-3*(P*133.322368/(R*TB_reboiler));
+
+%molmassor
+M_L = l_x1*M1 + l_x2*M2;
+M_V = v_x1*M1 + v_x2*M2;
+
+%Belastningsparameter
+Flv = ((l*M_L)/(v*M_V)) * sqrt(rho_V/rho_L);
+
+% från diagramet
+Cf = 0.25*0.3048; %ft/s -> m/s
+
+%Flödningsparametern
+C = Fst*Ff*Fha*Cf;
+
+% Ånghastigheten vid flödning
+Uf = C*sqrt((rho_L-rho_V)/rho_V);
+
+%Ånghastighet
+U = vaporveloc*Uf;
+
+%Aktiv area
+Aaktiv = (V*(1/3.6)*M_V*1e-3*(1/rho_V))/U;
+
+%Total area
+Atot = Aaktiv/0.8;
+
+%Bottendiameter
+d = 2*sqrt(Atot/pi);
+
+%Kolonnens höjd
+h = trayheight * (bottnar_verklig + 1);
+
+% Kärlets tjocklek
+rho_wall = [7900 8000];            % Densitet ( kolstål / rostfritt stål )
+t = 9;  % [mm]
+
+Vwall_dest = pi.*((d+2.*t*10^-3)/2).^2.*h - pi*(d/2)^2*h;
+mwall_dest = Vwall_dest.*rho_wall;
+
+%% Värmen
+
+Hvap1 = 20.6e3;  % j mol-1
+Hvap2 = 19.99e3; % j mol-1
+
+% Värmen
+Q_condensor = (Hvap1*V*1e3*x(end) + Hvap2*V*1e3*(1-x(end))) * 3600^-1;    % W
+Q_reboiler = (Hvap1*v*1e3*y0 + Hvap2*v*1e3*(1-y0)) * 3600^-1;             % W
+
+%% Kostnader: Separation
+
+% Bottnar
+% Parametrar givna i PM
+Param_bottnar = [130 440 1.8        % sieve tray
+                 210 400 1.9                % valve tray
+                 340 400 1.9];              % bubble cap tray
+     
+kurs = 9.99;                        % Växelkursen sek/dollar
+lang = 4;                           % Langfaktorn
+index = 596/532.9;
+
+kostnad_sieve = Cost(d,Param_bottnar(1,:))*kurs*lang*index*bottnar_verklig;
+kostnad_valve = Cost(d,Param_bottnar(2,:))*kurs*lang*index*bottnar_verklig;
+kostnad_bubble = Cost(d,Param_bottnar(3,:))*kurs*lang*index*bottnar_verklig;
+
+% Skalmassa
+Param_skalmassa = [10200 31 0.85
+                   12800 73 0.85];
+
+kostnad_colonwall_kol = Cost(mwall_dest(1),Param_skalmassa(1,:));
+kostnad_colonwall_rostfri = Cost(mwall_dest(2),Param_skalmassa(2,:));
+
+%% UTSKRIVNING AV RESULTAT: Separation
+disp(['SEPARATION:'])
+disp([' ' ])
+disp(['Antal ideala bottnar             ' num2str(bottnar_ideal)])
+disp(['Antal verkliga  bottnar          ' num2str(bottnar_verklig)])
+disp(['Diameter på tornet:              ' num2str(d)])
+disp(['Höjd på tornet:                  ' num2str(h)])
+disp([' ' ])
+
+% Vapour and liquid flowrates in kmol h^-1
+disp(['L (förstärkardel):               ' num2str(L)])
+disp(['V (förstärkardel):               ' num2str(V)])
+disp(['L (avdrivardel):                 ' num2str(l)])
+disp(['V (avdrivardel):                 ' num2str(v)])
+disp([' ' ])
+
+% Värmen
+disp(['Kondensorvärme (MW)              ' num2str(Q_condensor*10^-6)])
+disp(['Återkokarvärme (MW)              ' num2str(Q_reboiler*10^-6)])
+disp([' ' ])
+
+% Factors from correlation
+disp(['F_LV                             ' num2str(Flv)])
+disp(['C_F (ft s^-1)                    ' num2str(Cf/0.3048)])
+disp([' ' ])
+
+% Kostnad bottnar
+disp(['Kostnad (sieve) (kr)             ' num2str(kostnad_sieve)])
+disp(['Kostnad (valve) (kr)             ' num2str(kostnad_valve)])
+disp(['Kostnad (bubble) (kr)            ' num2str(kostnad_bubble)])
+disp([' ' ])
+
+% Väggtjocklek och pris på kolonn
+disp(['Volym (kolstål) (m^3)            ' num2str(Vwall_dest)])
+disp(['Volym (rostfritt stål) (m^3)     ' num2str(Vwall_dest)])
+disp(['Massa (kolstål) (kg)             ' num2str(mwall_dest(1))])
+disp(['Massa (rostfritt stål) (kg)      ' num2str(mwall_dest(2))])
+disp(['Kostnad (kolstål) (kr)           ' num2str(kostnad_colonwall_kol)])
+disp(['Kostnad (rostfritt stål) (kr)    ' num2str(kostnad_colonwall_rostfri)])
 
 %% Funktioner
 

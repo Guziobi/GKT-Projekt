@@ -84,9 +84,9 @@ xf = U(end,2)/(U(end,1)+U(end,2)); % Komposition in till destillationskolonnen
 % PLOTTAR:
 % Plottar omsättningsgraden mot massan katalysator för de båda reaktorerna
 figure(1);
-plot(W,X)
-hold on
 plot(W_alt1,X_alt1,'r--')
+hold on
+plot(W,X,'Color','#0072BD')
 title('Reaktor 1 och 2'),xlabel('Katalysatormassa, W [kg]'), ylabel('Omsättningsgrad, X')
 hold on
 plot([Wfinal1 Wfinal1],[0 1],'k--')     % Avgränsning mellan reaktor 1 och 2
@@ -408,8 +408,8 @@ Q_reboiler = (Hvap1*v*1e3*y0 + Hvap2*v*1e3*(1-y0)) * 3600^-1;             % W
 % Bottnar
 % Parametrar givna i PM
 Param_bottnar = [130 440 1.8        % sieve tray
-                 210 400 1.9                % valve tray
-                 340 400 1.9];              % bubble cap tray
+                 210 400 1.9        % valve tray
+                 340 400 1.9];      % bubble cap tray
      
 kurs = 9.99;                        % Växelkursen sek/dollar
 lang = 4;                           % Langfaktorn

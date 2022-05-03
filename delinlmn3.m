@@ -223,7 +223,7 @@ disp(['Kostnad för reaktor 1 år 2020 (SEK):              ',num2str(cost1_2020)
 disp(['Kostnad för alternativ reaktor 1 år 2020 (SEK):   ',num2str(cost_alt_2020)])
 disp(['Kostnad för reaktor 2 år 2020 (SEK):              ',num2str(cost2_2020)])
 disp(['Kostnad för reaktor 1 och 2 år 2020 (SEK):        ',num2str(cost_allareakt)])
-disp(['_________________________________-____________________________'])
+disp(['______________________________________________________________'])
 
 disp([' ' ])
 
@@ -373,10 +373,10 @@ C = Fst*Ff*Fha*Cf;
 Uf = C*sqrt((rho_L-rho_V)/rho_V);
 
 %Ånghastighet
-U = vaporveloc*Uf;
+Uvap = vaporveloc*Uf;
 
 %Aktiv area
-Aaktiv = (V*(1/3.6)*M_V*1e-3*(1/rho_V))/U;
+Aaktiv = (V*(1/3.6)*M_V*1e-3*(1/rho_V))/Uvap;
 
 %Total area
 Atot = Aaktiv/0.8;
@@ -423,12 +423,13 @@ kostnad_bubble = Cost(d,Param_bottnar(3,:))*kurs*lang*index*bottnar_verklig;
 Param_skalmassa = [10200 31 0.85
                    12800 73 0.85];
 
-kostnad_colonwall_kol = Cost(mwall_dest(1),Param_skalmassa(1,:));
-kostnad_colonwall_rostfri = Cost(mwall_dest(2),Param_skalmassa(2,:));
+kostnad_colonwall_kol = Cost(mwall_dest(1),Param_skalmassa(1,:))*kurs*lang;
+kostnad_colonwall_rostfri = Cost(mwall_dest(2),Param_skalmassa(2,:))*kurs*lang;
 
 %% UTSKRIVNING AV RESULTAT: Separation
 disp(['SEPARATION:'])
 disp([' ' ])
+disp(['______________________Dimensionering__________________________'])
 disp(['Antal ideala bottnar             ' num2str(bottnar_ideal)])
 disp(['Antal verkliga  bottnar          ' num2str(bottnar_verklig)])
 disp(['Diameter på tornet:              ' num2str(d)])
@@ -453,6 +454,7 @@ disp(['C_F (ft s^-1)                    ' num2str(Cf/0.3048)])
 disp([' ' ])
 
 % Kostnad bottnar
+disp(['______________________Separationkostnader_____________________'])
 disp(['Kostnad (sieve) (kr)             ' num2str(kostnad_sieve)])
 disp(['Kostnad (valve) (kr)             ' num2str(kostnad_valve)])
 disp(['Kostnad (bubble) (kr)            ' num2str(kostnad_bubble)])

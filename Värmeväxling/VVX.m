@@ -8,8 +8,8 @@ M_B=56.11*1000;  %[kg/mol]       Molmassan för isobuten
 M_D=18.01528;    %[kg/mol]       Molmassan för vatten
 
 %Temperaturer
-Thin=750;            %[K]            Produktflödets intemperatur (varm sida)
-Tcin=180+273;        %[K]            Reaktantflödets intemperatur (kall sida)
+Thin=929;            %[K]            Produktflödets intemperatur (varm sida)
+Tcin=180+273;        %[K]            Reaktantflödets intemperatur (kall sida) (blandat med 180C ånga)
 Tmedel=(Thin+Tcin)./2;     %[K] Cp tas vid medeltemp
 
 %Flöde varm sida [mol/s]
@@ -60,13 +60,13 @@ cph_tot=yh_A.*cp_A+yh_B.*cp_B+yh_C.*cp_C+yh_D.*cp_D; %[J/(molK)]
 %Total värmekapacitet, varm sida
 cpc_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
 
+U=50;                   %[W/(m2K)]      Värmegenomgångstal, gas/gas-vvx
+A=800;                  %[m2] Area
 
-U=50;                  %[W/(m2K)]      Värmegenomgångstal, gas/vätska-vvx
 
-%Kostnader och övrigt
-a=32000; b=70; n=1.2;  %Kostnadsparametrar
-
-tdrift=8000;                %[h/år]         Driftstid på ett år
+%Kostnader
+a=32000; b=70; n=1.2;   %Kostnadsparametrar
+Ka=a+b.*A.^n.*9.99;     %[SEK]    Kostnad för värmeväxlaren (1 USD = 9.99 SEK)
 
 %Beräkning
 C=[Fh_tot*cph_tot Fc_tot*cpc_tot];
@@ -74,13 +74,10 @@ Cmin=min(C);
 Cmax=max(C);
 Cmm=Cmin./Cmax;         %Kvoten Cmin/Cmax
 
-epsilon = 0.8;
+NTU=U*A/Cmin;           %Number of transfered units
 
-NTU=4;                        %Ur diagram
+epsilon=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));    %Termisk verkningsgrad
 
-A=NTU.*Cmin./U;               %[m2] Area
-
-Ka=a+b.*A.^n.*9.99;   %[SEK]    Kostnad för värmeväxlaren (1 USD = 9.99 SEK)
 
 %Sökt
 q=epsilon*Cmin*(Thin-Tcin);          %[J] Överförd värme
@@ -91,7 +88,10 @@ Thut=Thin-q./(Fh_tot.*cph_tot);      %[K] Uttemperatur varm sida
 disp(['________________________Resultat___________________________'])
 disp(['Area (m2):                                        ',num2str(A)])
 disp(['Överfört värme (J):                               ',num2str(q)])
+disp(['Verkningsgrad:                                    ',num2str(epsilon)])
+disp(['Intemperatur, kall sida (K):                      ',num2str(Tcin)])
 disp(['Uttemperatur, kall sida (K):                      ',num2str(Tcut)])
+disp(['Intemperatur, varm sida (K):                      ',num2str(Thin)])
 disp(['Uttemperatur, varm sida (K):                      ',num2str(Thut)])
 disp(['Kostnad för värmeväxlaren (SEK):                  ',num2str(Ka)])
 
@@ -304,7 +304,7 @@ cp_Dl=Cp_calc(Tmedel, CPcoeffDl);
 cp_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
 
 %Produktflöde
-q=cp_tot.*F_tot.*dT;    %[W] Effekt
+q=cp_tot.*F_tot.*dT;     %[W] Effekt
 
 E=0.8;                   %Verkningsgrad ugn
 qugn=(q/E)/10e6;         %[MW] Ugnens nyttiga effekt
@@ -328,5 +328,15 @@ function Cp = Cp_calc(T, CPcoeff)
     D = CPcoeff(4);
 
     Cp = A + B*T + C*T.^2 + D*T.^3;
+
+end
+
+%% Beräkning av NTU från epsilon
+function diff=eps(epsilon,Cmm,NTU)
+
+VL=epsilon;
+HL=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));
+
+diff=HL-VL;
 
 end

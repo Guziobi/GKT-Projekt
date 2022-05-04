@@ -9,13 +9,10 @@ P = 2280;          % mmHg (3 atm)
 xf = 0.88051;         % molbråk buten
 xd = 0.95;         % destillatbråk 
 xb = 0.05;         % bottenbråk
-R = 5;            % återflödesförhållande
+R = 3.25;            % återflödesförhållande
 %Molmassor
 M1 = 56.1063;      % g mol-1
 M2 = 58.1222;      % g mol-1
-% Molmassor
-M1 = 56.1063;       % g mol-1
-M2 = 58.1222;       % g mol-1
 % Kokpunkter
 Tb_1 = -6.3+273.15; % K   (buten)
 Tb_2 = -1+273.15;   % K   (butan)
@@ -88,7 +85,7 @@ while y(i)<xd
 end
 
 bottnar_ideal = i;
-bottnar_verklig = i/0.7;
+bottnar_verklig = round(i/0.7);
 
 % Jämviktkurva och jämviktsplot
 xeq = 0:0.001:1;    
@@ -107,28 +104,6 @@ axis([0 1 0 1])
 
 legend('Referenslinje', 'Jämviktskurva','Location','northwest')
 
-figure(2);
-plot(xeq,yeq)
-xlabel('x_1'), ylabel('y_1')
-axis([0 1 0 1])
-hold on
-
-% Plottar stegning och driftlinjer
-plot((V/L)*yeq(890:end) + (1/L)*(B*xb-F*xf),yeq(890:end)) % Förstärkardel (övre driftlinje)
-plot((v/l)*yeq(1:890) + (B/l)*xb,yeq(1:890))
-
-plot([x(1) x(2)],[y(1),y(1)],'k')
-plot([x(1) x(1)],[0.10 y(1)],'k')
-for n=2:i-1
-     plot([x(n) x(n+1)],[y(n),y(n)],'k')
-end
-
-for n=2:i-1
-     plot([x(n) x(n)],[y(n-1),y(n)],'k')
-end
-
-legend('Jämviktskurva', 'Övre driftlinje','Nedre driftlinje','Location','northwest')
-
 %% Dimensionering
 
 % Sammansättning ut ur återkokare
@@ -139,7 +114,7 @@ l_x1 = x(1);
 l_x2 = 1 - x(1);
 
 % Flödesfaktorer
-surftention = 70; %dyn cm-1
+surftention = 15.28;        %dyn cm-1
 Fst = (surftention/20)^0.2;
 vaporveloc = 0.7;
 Ff = 1; %nono-foaming
@@ -149,6 +124,7 @@ Fha = 1; %Hålen är bra
 trayheight = 0.45; %m
 
 %Densiteter för vätska och gas
+R = 8.314;
 rho_L = ((l_x1*M1*1e-3)/(l_x1*M1*1e-3 + l_x2*M2*1e-3))*L_rho1 + ((l_x2*M2*1e-3)/(l_x1*M1*1e-3 + l_x2*M2*1e-3))*L_rho2; % kg m-3
 rho_V = v_x1*M1*1e-3*(P*133.322368/(R*TB_reboiler)) + v_x2*M2*1e-3*(P*133.322368/(R*TB_reboiler));
 
@@ -184,13 +160,10 @@ d = 2*sqrt(Atot/pi);
 h = trayheight * (bottnar_verklig + 1);
 
 % Kärlets tjocklek
-P_konstr = 1.1*P*133.322368;
-Smax = [88.9 137.9]*10^6;                              % Maximal tillåten spänning ( kolstål / rostfritt stål )
-E = 1;                                                 % Svetsverkningsgrad
-rho_wall = [7900 8000];                                % Densitet ( kolstål / rostfritt stål )
-t = ((P_konstr*d)./((2*Smax*E)-(1.2*P_konstr))).*10^3; %[mm]
+rho_wall = [7900 8000];            % Densitet ( kolstål / rostfritt stål )
+t = 9;  % [mm]
 
-Vwall_dest = pi.*((d+2.*t*10^-3)/2).^2.*2.*(d+2.*t*10^-3) - pi*(d/2)^2*2*d;
+Vwall_dest = pi.*((d+2.*t*10^-3)/2).^2.*h - pi*(d/2)^2*h;
 mwall_dest = Vwall_dest.*rho_wall;
 
 %% Värmen
@@ -240,8 +213,8 @@ disp(['V (avdrivardel):                 ' num2str(v)])
 disp([' ' ])
 
 % Värmen
-disp(['Condenser duty (MW)              ' num2str(Q_condensor*10^-6)])
-disp(['Reboiler duty (MW)               ' num2str(Q_reboiler*10^-6)])
+disp(['Kondensorvärme (MW)              ' num2str(Q_condensor*10^-6)])
+disp(['Återkokarvärme (MW)              ' num2str(Q_reboiler*10^-6)])
 disp([' ' ])
 
 % Factors from correlation
@@ -253,14 +226,13 @@ disp([' ' ])
 disp(['Kostnad (sieve) (kr)             ' num2str(kostnad_sieve)])
 disp(['Kostnad (valve) (kr)             ' num2str(kostnad_valve)])
 disp(['Kostnad (bubble) (kr)            ' num2str(kostnad_bubble)])
-
+disp([' ' ])
 
 % Väggtjocklek och pris på kolonn
-disp(['Volym (kolstål) (m^3)            ' num2str(Vwall_dest(1))])
-disp(['Volym (rostfritt stål) (m^3)     ' num2str(Vwall_dest(2))])
+disp(['Volym (kolstål) (m^3)            ' num2str(Vwall_dest)])
+disp(['Volym (rostfritt stål) (m^3)     ' num2str(Vwall_dest)])
 disp(['Massa (kolstål) (kg)             ' num2str(mwall_dest(1))])
 disp(['Massa (rostfritt stål) (kg)      ' num2str(mwall_dest(2))])
-disp([' ' ])
 disp(['Kostnad (kolstål) (kr)           ' num2str(kostnad_colonwall_kol)])
 disp(['Kostnad (rostfritt stål) (kr)    ' num2str(kostnad_colonwall_rostfri)])
 

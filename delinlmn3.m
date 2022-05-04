@@ -111,7 +111,7 @@ legend('isobutan','isobuten och vätgas','Location','northwest')
 T_F1 = (9/5)*(T_reaktor1-273.15)+32;	                  % Temperatur i Farenheit, om över 900F måste rostfritt stål användas, max 1500F
 Vol1 = Wfinal1./rho_cat;
 D1 = (2*Vol1/pi)^(1/3);                                   % Diameter på reaktor 1 [m]
-rad1 = D1/2;    
+% rad1 = D1/2;    
 Smax = 74.5E6;                                            % Maximalt tillåtna spänningen över 900F [N/m2]
 P_konstr = P*10^5*1.1;                                    % Konstruktionstryck, 10% mer än arbetstryck [Pa]
 E = 1;                                                    % Svetsverkningsgrad
@@ -126,8 +126,7 @@ elseif D1 >= 2 && D1 < 2.5
      wall1 = 9;
 end
 
-Mantel1 = 8*pi*(rad1^2);
-V_wall1 = Mantel1*(wall1*10^-3);        %[m3]
+V_wall1 = pi.*((D1+2.*wall1*10^-3)/2).^2.*2*(D1+2*wall1*10^-3) - pi*(D1/2)^2*2*D1; %[m3]
 mass_wall1 = V_wall1(1)*rho_wall(1);    %[kg]
 
 % Horisontell reaktor pris
@@ -139,9 +138,8 @@ cost1_2020 = (cost_reak1_cat*(569/532.9))*9.99*4;   % Kostnad för reaktor 1 + k
 
 % REKTOR 1 alt.
 T_Falt = (9/5)*(T_reaktor1-273.15)+32;                           % Temperatur i Farenheit, om över 900F måste rostfritt stål användas, max 1500F
-Vol_alt = Wfinal_alt1./rho_cat;
-rad_alt = (Vol_alt/(4*pi)).^(1/3);                               % Radie på reaktor 1 [m]
-D_alt = 2*rad_alt;                                               % Diameter på reaktor 1 [m]
+Vol_alt = Wfinal_alt1./rho_cat;                                  % Volym på reaktor 1 (alternativ) [m^3]
+D_alt = (2*Vol_alt/pi)^(1/3);                                    % Diameter på reaktor 1 (alternativ) [m]
 wall_alt = ((P_konstr*D_alt)./((2*Smax*1)-(1.2*P_konstr))).*10^3; %[mm]
 
 if D_alt < 1
@@ -152,8 +150,7 @@ elseif D_alt >= 2 && D_alt < 2.5
    wall_alt = 9;
 end
 
-Mantel_alt = 8*pi*(rad_alt^2);
-V_wall_alt = Mantel_alt*(wall_alt*10^-3);   %[m3]
+V_wall_alt = pi.*((D_alt+2.*wall_alt*10^-3)/2).^2.*2*(D_alt+2*wall_alt*10^-3) - pi*(D_alt/2)^2*2*D_alt; %[m3]
 mass_wall_alt = V_wall_alt.*rho_wall(1);    %[kg]
 
 % Horisontell reaktor pris
@@ -164,8 +161,7 @@ cost_alt_2020 = (cost_reak_alt_cat*(569/532.9))*9.99*4;      % Kostnad för reak
 % REAKTOR 2
 T_F2 = (9/5)*(T_reaktor2-273.15)+32;                        % Temperatur i Farenheit, om över 900F måste rostfritt stål användas, max 1500F
 Vol2 = Wfinal2./rho_cat;
-rad2 = (Vol2/(4*pi)).^(1/3);                                % Radie på reaktor 1 [m]
-D2 = 2*rad2;                                                % Diameter på reaktor 1 [m]
+D2 = (2*Vol2/pi)^(1/3);                                              % Diameter på reaktor 1 [m]
 wall2= ((P_konstr*D2)./((2*Smax*1)-(1.2*P_konstr))).*10^3;  % [mm]
 
 if D2 < 1
@@ -176,8 +172,7 @@ elseif D2 >= 2 && D2 < 2.5
     wall2 = 9;
 end
 
-Mantel2 = 8*pi*(rad2^2);
-V_wall2 = Mantel2*(wall2.*10^-3);   %[m3]
+V_wall2 = pi.*((D2+2.*wall2*10^-3)/2).^2.*2*(D2+2*wall2*10^-3) - pi*(D2/2)^2*2*D2; %[m3]
 mass_wall2 = V_wall2.*rho_wall(1);  %[kg]
 
 % Horisontell reaktor
@@ -391,7 +386,7 @@ h = trayheight * (bottnar_verklig + 1);
 rho_wall = [7900 8000];            % Densitet ( kolstål / rostfritt stål )
 t = 9;  % [mm]
 
-Vwall_dest = pi.*((d+2.*t*10^-3)/2).^2.*h - pi*(d/2)^2*h;
+Vwall_dest = pi.*((d+2.*t*10^-3)/2).^2.*(h+2*t*10^-3) - pi*(d/2)^2*h;
 mwall_dest = Vwall_dest.*rho_wall;
 
 %% Värmen

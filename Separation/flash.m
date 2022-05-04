@@ -27,7 +27,7 @@ rhoD = 974.93;      % kg m-3 Vätska
 
 %V =nRT/p
 % Vätskeflöde från tanken (Vatten)
-L = U(end,4)*MD*1e-3/rhoD; %m3/s
+L = (U(end,4)*MD*1e-3)/rhoD; %m3/s
 % Ångflöde ut
 V = ((sum(U(end,:))-U(end,4)-U(end,5))*R*T)/p; %m3/s
 
@@ -36,7 +36,7 @@ tau = 10*60; % s (10min)
 rho_L = rhoD;
 
 %sum(xi*(MiP/RT))
-rho_V = P*(U(end,1)*MA + U(end,2)*MB + U(end,1)*MC)/(T*R*V);
+rho_V = p*1e-3*(U(end,1)*MA + U(end,2)*MB + U(end,3)*MC)/(T*R*V);
 ut = k*sqrt((rho_L - rho_V)/rho_V); %m s-1
 
 % Diameter
@@ -50,7 +50,7 @@ H1 = HL1 + 1.5*D1;
 
 
 %% tank 2
-p = 101325*3; % Pa
+p = 101325*6; % Pa
 
 x1 = U(end,2)/(U(end,1) + U(end,2));
 
@@ -62,7 +62,7 @@ V2 = (U(end,3)*R*T)/p; %m3/s
 L2 = (U(end,1)*MA*1e-3)/rhoA + (U(end,2)*MB*1e-3)/rhoB; %m3/s
 
 rho_L = (U(end,1)*rhoA + U(end,2)*rhoB)/(U(end,1) + U(end,2)); %kg m-3
-rho_V = P*(U(end,3)*MC)/(T*R*V); %kg m-3
+rho_V = p*1e-3*(U(end,3)*MC)/(T*R*V2); %kg m-3
 
 ut = k*sqrt((rho_L - rho_V)/rho_V); %m s-1
 

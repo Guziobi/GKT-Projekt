@@ -6,8 +6,13 @@ clc, clear, close all
 % vätgas   = C
 % vatten   = D
 
-%% REAKTOR
-% Data
+% DATA
+% Molmassor
+MA = 58.1222;      % g mol-1  Butan
+MB = 56.1063;      % g mol-1  Buten
+MC = 2.0160;       % g mol-1  Vätgas
+MD = 18.0160;      % g mol-1  Vatten
+
 R = 8.31447;        % Gaskonstanten [J mol^-1 K^-1]
 P = 1;              % [bar]
 T_reaktor1 = 950;   % [K]
@@ -23,8 +28,12 @@ CPcoeffA = [-1.39 0.3847 -1.846*10^-4 2.895*10^-8];     % ISOBUTAN
 CPcoeffB = [16.05 0.2804 -1.091*10^-4 9.098*10^-9];     % ISOBUTEN
 CPcoeffC = [27.14 0.009274 -1.38*10^-5 7.645*10^-9];    % H2
 CPcoeffD = [32.24 0.001924 1.055*10^-5 -3.596*10^-9];   % H2O
-Cp = [CPcoeffA; CPcoeffB; CPcoeffC; CPcoeffD];
+CPcoeffDl = [72.43 1.039*10^-2 -1.497*10^-6 0 ];         % H2O flytande
 
+Cp = [CPcoeffA; CPcoeffB; CPcoeffC; CPcoeffD; CPcoeffDl];
+
+
+%% REAKTOR
 dH0A   = -134.2e3;       % [kJ mol^-1]
 dH0B   = -17.9e3;        % [kJ mol^-1]
 dH0C   = 0;              % [kJ mol^-1]
@@ -69,7 +78,6 @@ U = [U1; U2([2:end],:)];
 X = (U(1,1)-U(:,1))/U(1,1);
 W = [W1; [W2([2:end],:)+W1(end)]]; % [kg]
 T = [T1; T2([2:end],:)];           % [K]
-V = [V1; [V2([2:end],:)+V1(end)]]; % [m3]
 
 % Molflöden ut ur reaktor 2
 FA = U(:,1);
@@ -177,11 +185,11 @@ cost2_2020 = (cost_reak2_cat*(569/532.9))*9.99*4;        % Kostnad för reaktor 
 cost_allareakt = cost1_2020 + cost2_2020;
 
 %% Utskrivning av resultat: Reaktor
-disp(['REAKTOR:'])
-disp([' ' ])
+disp('REAKTOR:')
+disp(' ' )
 
 % Ut ur reaktor 1
-disp(['______________________Reaktor 1__________________________'])
+disp('______________________Reaktor 1__________________________')
 disp(['Butan ut (mol/s):                                ',num2str(U1(end,1))])
 disp(['Buten ut (mol/s):                                ',num2str(U1(end,2))])
 disp(['Vätgas ut (mol/s):                               ',num2str(U1(end,3))])
@@ -191,10 +199,10 @@ disp(['Volym (m^3):                                     ',num2str(Vol1)])
 disp(['Diameter (m):                                    ',num2str(D1)])
 disp(['Längd (m):                                       ',num2str(D1*2)])
 disp(['Omsättningsgrad:                                 ',num2str(X1)])
-disp([' '])
+disp(' ')
 
 % Ut ur reaktor 2
-disp(['______________________Reaktor 2__________________________'])
+disp('______________________Reaktor 2__________________________')
 disp(['Butan ut (mol/s):                                ',num2str(U(end,1))])
 disp(['Buten ut (mol/s):                                ',num2str(U(end,2))])
 disp(['Vätgas ut (mol/s):                               ',num2str(U(end,3))])
@@ -205,21 +213,273 @@ disp(['Diameter (m):                                    ',num2str(D2)])
 disp(['Längd (m):                                       ',num2str(D2*2)])
 disp(['Omsättningsgrad:                                 ',num2str(X2)])
 
-disp([' '])
+disp(' ')
 disp(['Omsättningsgrad TOTAL:                           ',num2str(X(end))])
 disp(['Katalysatormassa (kg) TOTAL:                     ',num2str(Wfinal1+Wfinal2)])
 disp(['Volym (m^3) TOTAL:                               ',num2str(Vol1+Vol2)])
-disp([' '])
+disp(' ')
 
 % Reaktorkostnad
-disp(['______________________Reaktorkostnader________________________'])
+disp('______________________Reaktorkostnader________________________')
 disp(['Kostnad för reaktor 1 år 2020 (SEK):              ',num2str(round(cost1_2020, -3))])
 disp(['Kostnad för alternativ reaktor 1 år 2020 (SEK):   ',num2str(round(cost_alt_2020, -3))])
 disp(['Kostnad för reaktor 2 år 2020 (SEK):              ',num2str(round(cost2_2020, -3))])
 disp(['Kostnad för reaktor 1 och 2 år 2020 (SEK):        ',num2str(round(cost_allareakt, -3))])
-disp(['______________________________________________________________'])
+disp('______________________________________________________________')
+disp(' ')
 
-disp([' ' ])
+%% Värmeväxling
+%förvärmning
+%Temperaturer
+Thin=U(end,5);        %[K]        Produktflödets intemperatur (varm sida)
+Tcin=180+273;    %[K]        Reaktantflödets intemperatur (kall sida) (blandat med 180C ånga)
+Tmedel=(Thin+Tcin)./2; %[K]  Cp tas vid medeltemp
+
+%Flöde varm sida [mol/s]
+Fh_A=U(end,1);
+Fh_B=U(end,2);
+Fh_C=U(end,3);     
+Fh_D=U(end,4);
+
+Fh_tot=(Fh_A+Fh_B+Fh_C+Fh_D);  %[mol/s]  Totalt molflöde varm sida
+
+%Flöden kall sida
+Fc_A=U01(1);
+Fc_B=U01(2);
+Fc_C=U01(3);     
+Fc_D=U01(4);
+
+Fc_tot=(Fc_A+Fc_B+Fc_C+Fc_D);  %[mol/s]  Totalt molflöde varm sida
+
+%Molbråk varm sida
+yh_A=Fh_A./Fh_tot;
+yh_B=Fh_B./Fh_tot;
+yh_C=Fh_C./Fh_tot;
+yh_D=Fh_D./Fh_tot;
+
+%Molbråk kall sida
+yc_A=Fc_A./Fc_tot;
+yc_B=Fc_B./Fc_tot;
+yc_C=Fc_C./Fc_tot;
+yc_D=Fc_D./Fc_tot;
+
+%Värmekapaciteter [J/(mol K)]
+cp_A=Cp_calc(Tmedel, CPcoeffA);        
+cp_B=Cp_calc(Tmedel, CPcoeffB);
+cp_C=Cp_calc(Tmedel, CPcoeffC);
+cp_D=Cp_calc(Tmedel, CPcoeffD);
+
+%Total värmekapacitet, varm sida
+cph_tot=yh_A.*cp_A+yh_B.*cp_B+yh_C.*cp_C+yh_D.*cp_D; %[J/(molK)] 
+
+%Total värmekapacitet, kalla sida
+cpc_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
+
+U_VVX1=50;                   %[W/(m2 K)]      Värmegenomgångstal, gas/gas-vvx
+A_VVX1=1000;                  %[m2] Area
+%A=linspace(0,1000,1000)    %För att plotta epsilon mot A
+
+%Kostnader
+a=32000; b=70; n=1.2;   %Kostnadsparametrar
+Ka=a+b.*A_VVX1.^n.*9.99;     %[SEK]    Kostnad för värmeväxlaren (1 USD = 9.99 SEK)
+
+%Beräkning
+C=[Fh_tot*cph_tot Fc_tot*cpc_tot];
+Cmin=min(C);
+Cmax=max(C);
+Cmm=Cmin./Cmax;         %Kvoten Cmin/Cmax
+
+NTU=U_VVX1*A_VVX1/Cmin;           %Number of transfered units
+
+
+epsilon=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));    %Termisk verkningsgrad
+
+
+%Sökt
+q=epsilon*Cmin*(Thin-Tcin);          %[W] Effekt
+Tcut=Tcin+q./(Fc_tot.*cpc_tot);      %[K] Uttemperatur kall sida
+Thut=Thin-q./(Fh_tot.*cph_tot);      %[K] Uttemperatur varm sida
+
+%plot(A,epsilon) %För optimering av area
+
+disp('_____________Resultat Förvärmning med produktflöde_______________')
+disp(['Area (m2):                                        ',num2str(A_VVX1)])
+disp(['Överfört värme (J):                               ',num2str(q)])
+disp(['Verkningsgrad:                                    ',num2str(epsilon)])
+disp(['Intemperatur, kall sida (K):                      ',num2str(Tcin)])
+disp(['Uttemperatur, kall sida (K):                      ',num2str(Tcut)])
+disp(['Intemperatur, varm sida (K):                      ',num2str(Thin)])
+disp(['Uttemperatur, varm sida (K):                      ',num2str(Thut)])
+disp(['Kostnad för värmeväxlaren (SEK):                  ',num2str(Ka)])
+
+%Ugn 1-2
+%Temperaturer
+Tcin=Tcut;               %[K]            Reaktantflödets temperatur in
+Tut=950;                 %[K]            Önskad uttemperatur
+Tmedel=(Tcin+Tut)./2;    %[K]            Cp tas vid medeltemperatur        
+dT=Tut-Tcin;             %[K]            Temperaturdifferens
+
+%Värmekapaciteter
+cp_A=Cp_calc(Tmedel, CPcoeffA);        %[J/(molK)]
+cp_B=Cp_calc(Tmedel, CPcoeffB);
+cp_C=Cp_calc(Tmedel, CPcoeffC);
+cp_D=Cp_calc(Tmedel, CPcoeffD);
+
+%Total värmekapacitet för produktflödet
+cp_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
+
+%Produktflöde
+q=cp_tot.*Fc_tot.*dT;     %[W] Ugnens nyttiga effekt
+
+E=0.8;                   %Verkningsgrad ugn
+qugn=(q/E)/10e6;         %[MW] Ugnens totala effekt
+
+%Kostnader och övrigt
+a=80000; b=109000; n=0.8;    %Kostnadsparametrar för cylindrisk ugn
+tdrift=8000;                 %[h/år]
+K=(a+b*qugn.^n)*9.99;        %[SEK]
+
+Kel=0.30;                    %[SEK/kWh]
+Kel_tot=(qugn*10e6/1000)*tdrift*Kel; %[SEK/år] Total kostnad för elen
+
+
+disp('________________________Resultat___________________________')
+disp(['Effekt (MW):                                      ',num2str(qugn)])
+disp(['Intemperatur (K):                                 ',num2str(Tcin)])
+disp(['Uttemperatur (K):                                 ',num2str(Tut)])
+disp(['Kostnad för ugnen (SEK):                          ',num2str(K)])
+disp(['Kostnad för elen (SEK/år):                        ',num2str(Kel_tot)])
+
+%Ugn 3-4
+Tcin=U1(end, 5);         %[K]            Produktflödets temperatur in
+Tut=950;                 %[K]            Önskad uttemperatur
+Tmedel=(Tcin+Tut)./2;    %[K]            Cp tas vid medeltemperatur        
+dT=Tut-Tcin;             %[K]            Temperaturdifferens
+
+%Produktflöden
+Fc_A= U1(end, 1);
+Fc_B= U1(end, 2);
+Fc_C= U1(end, 3);     
+Fc_D= U1(end, 4);  %[mol/s]
+
+F_tot=Fc_A+Fc_B+Fc_C+Fc_D;  %[mol/s]  Totalt molflöde
+
+%Molbråk
+yc_A=Fc_A./F_tot;
+yc_B=Fc_B./F_tot;
+yc_C=Fc_C./F_tot;
+yc_D=Fc_D./F_tot;
+
+%Värmekapaciteter
+cp_A=Cp_calc(Tmedel, CPcoeffA);        %[J/(molK)]
+cp_B=Cp_calc(Tmedel, CPcoeffB);
+cp_C=Cp_calc(Tmedel, CPcoeffC);
+cp_D=Cp_calc(Tmedel, CPcoeffD);
+
+%Total värmekapacitet för produktflödet
+cp_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
+
+%Produktflöde
+q=cp_tot.*F_tot.*dT;     %[W] Effekt
+
+E=0.8;                   %Verkningsgrad ugn
+qugn=(q/E)/10e6;         %[MW] Ugnens nyttiga effekt
+
+%Kostnader och övrigt
+a=80000; b=109000; n=0.8;    %Kostnadsparametrar för cylindrisk ugn
+tdrift=8000;                 %[h/år]
+K=(a+b*qugn.^n)*9.99;        %[SEK]
+
+Kel=0.30;                    %[SEK/kWh]
+Kel_tot=(qugn*10e6/1000)*tdrift*Kel; %[SEK/år] Total kostnad för elen
+
+
+disp('____________________Resultat Ugn 3-4________________________')
+disp(['Nyttig effekt (MW):                               ',num2str(qugn)])
+disp(['Intemperatur (K):                                 ',num2str(Tcin)])
+disp(['Uttemperatur (K):                                 ',num2str(Tut)])
+disp(['Kostnad för ugnen (SEK):                          ',num2str(K)])
+disp(['Kostnad för elen (SEK/år):                        ',num2str(Kel_tot)])
+
+
+%Kylning 6-7
+%Produktflöde
+%Temperaturer
+Thin=U(end, 5);                %[K] Produktflödets temperatur in
+Tut_guess=348;                 %[K] Önskad uttemp för Cp-approx, manuell iterering till denna temp nås
+Tmedel=(Thin+Tut_guess)./2;    %[K] Cp tas vid medeltemp
+
+%Produktflöden [mol/s] (varm sida)
+Fh_A=20*10^3./3600;
+Fh_B=107*10^3./3600;
+Fh_C=107./3600;     
+Fh_D=1900*10^3./3600;
+
+Fh_tot=(Fh_A+Fh_B+Fh_C+Fh_D);   %[mol/s]  Totalt molflöde
+
+%Molbråk
+yh_A=Fh_A./Fh_tot;
+yh_B=Fh_B./Fh_tot;
+yh_C=Fh_C./Fh_tot;
+yh_D=Fh_D./Fh_tot;
+
+%Värmekapaciteter [J/(mol K)]
+cp_A=Cp_calc(Tmedel, CPcoeffA);        
+cp_B=Cp_calc(Tmedel, CPcoeffB);
+cp_C=Cp_calc(Tmedel, CPcoeffC);
+cp_D=Cp_calc(Tmedel, CPcoeffD);
+
+%Total värmekapacitet för flödet
+cp_tot = yh_A.*cp_A + yh_B.*cp_B + yh_C.*cp_C + yh_D.*cp_D; %[J/(molK)] 
+
+%VVX-sidan (kalla)
+mvvx=120000/3600;                 %[kg/s] Massflöde
+Fvvx=(1000*mvvx/MD);              %[mol/s] Molflöde
+Tcin=287;                         %[K] Kondensatflödets temperatur in
+cpvvx=Cp_calc(Tcin, CPcoeffDl);   %[J/(mol K)] Kondensatflödets värmekapacitet (flytande vatten)
+        
+U_VVX2=200;                            %[W/(m2K)] Värmegenomgångstal, gas/vätska-vvx
+
+%Beräkning
+C=[Fh_tot*cp_tot Fvvx*cpvvx];    %[J/(K s)]
+Cmin=min(C);
+Cmax=max(C);
+Cmm=Cmin./Cmax;                  %Kvoten Cmin/Cmax
+
+%A=linspace(10,1000,1000);
+
+A_VVX2=880;                           %[m2] Värmeväxlarens area
+
+NTU=U_VVX2.*A_VVX2./Cmin;
+
+epsilon=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));    %Termisk verkningsgrad
+
+%plot(A,epsilon)
+
+%Kostnader och övrigt
+a=32000; b=70; n=1.2;       %Kostnadsparametrar
+
+Ka=a+b.*A_VVX2.^n.*9.99;         %[SEK]  Kostnad för värmeväxlaren (1 USD = 9.99 SEK)
+tdrift=8000;                %[h/år] Driftstid på ett år
+Kvatten=0.05;               %[kr/kWh] Kostnad för kylvattnet
+
+%Sökt
+q=epsilon*Cmin*(Thin-Tcin);      %[W] Effekt
+
+Kvatten_tot=(q/1000)*tdrift*Kvatten; %[SEK/år] Total kostnad för kylvattnet
+
+Tcut=Tcin+q./(Fvvx.*cpvvx);      %[K] Uttemperatur kall sida
+Thut=Thin-q./(Fh_tot.*cp_tot);   %[K] Uttemperatur varm sida
+
+disp(' ')
+disp('_____________________Resultat Kylning 6-7_____________________')
+disp(['Area (m2):                                        ',num2str(A_VVX2)])
+disp(['Överfört värme (J):                               ',num2str(q)])
+disp(['Uttemperatur, kall sida (K):                      ',num2str(Tcut)])
+disp(['Uttemperatur, varm sida (K):                      ',num2str(Thut)])
+disp(['Kostnad för värmeväxlaren (SEK):                  ',num2str(Ka)])
+disp(['Kostnad för kylvattnet (SEK/år):                  ',num2str(Kvatten_tot)])
+
 
 %% Flash
 % Data
@@ -233,12 +493,6 @@ Ant2 =  [15.6782 2154.90 -34.42];  % butan
 %Wilsonfaktorer
 W12 = 0.48584; 
 W21 = 1.64637; 
-
-% Molmassor
-MA = 58.1222;      % g mol-1  Butan
-MB = 56.1063;      % g mol-1  Buten
-MC = 2.0160;       % g mol-1  Vätgas
-MD = 18.0160;      % g mol-1  Vatten
 
 rhoA = 559.0;      % kg m-3 Buten
 rhoB = 556.62;     % kg m-3 Butan
@@ -331,17 +585,17 @@ kostnad_flash2_rostfri = Cost(Vwall_flash2(2),Param_skalmassa(2,:))*kurs*lang*in
 
 %% UTSKRIVNING AV RESULTAT: Separation (flashtankar)
 
-disp(['SEPARATION (flashtankar):'])
-disp([' ' ])
-disp(['______________________Dimensionering__________________________'])
+disp('SEPARATION (flashtankar):')
+disp(' ')
+disp('______________________Dimensionering__________________________')
 disp(['Diameter tank 1 (m):                 ' num2str(D1, '%.2f')])
 disp(['Höjd på tank 1 (m):                  ' num2str(H1, '%.2f')])
-disp([' ' ])
+disp(' ')
 disp(['Diameter tank 2 (m):                 ' num2str(D2, '%.2f')])
 disp(['Höjd på tank 2 (m):                  ' num2str(H2, '%.2f')])
-disp([' ' ])
-disp(['______________________Utrustningskostnader_____________________'])
-disp(['Tank 1:' ])
+disp(' ')
+disp('______________________Utrustningskostnader_____________________')
+disp('Tank 1:')
 disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash1(1), '%.2f')])
 disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash1(1), '%.2f')])
 disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash1(1), '%.2f')])
@@ -350,8 +604,8 @@ disp(['Massa (kolstål) (kg)                ' num2str(mwall_flash1(1), '%.2f')])
 disp(['Massa (rostfritt stål) (kg)         ' num2str(mwall_flash1(2), '%.2f')])
 disp(['Kostnad (kolstål) (kr)              ' num2str(kostnad_flash1_kol, '%.2f')])
 disp(['Kostnad (rostfritt stål) (kr)       ' num2str(kostnad_flash1_rostfri, '%.2f')])
-disp([' ' ])
-disp(['Tank 2:' ])
+disp(' ')
+disp('Tank 2:')
 disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash2(1), '%.2f')])
 disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash2(1), '%.2f')])
 disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash2(1), '%.2f')])
@@ -550,41 +804,41 @@ kostnad_colonwall_kol = Cost(mwall_dest(1),Param_skalmassa(1,:))*kurs*lang;
 kostnad_colonwall_rostfri = Cost(mwall_dest(2),Param_skalmassa(2,:))*kurs*lang;
 
 %% UTSKRIVNING AV RESULTAT: Separation
-disp([' '])
-disp([' '])
-disp(['Destillation:'])
-disp([' ' ])
-disp(['______________________Dimensionering__________________________'])
+disp(' ')
+disp(' ')
+disp('Destillation:')
+disp(' ')
+disp('______________________Dimensionering__________________________')
 disp(['xf:                              ',num2str(xf, '%.3f')])
 disp(['Antal ideala bottnar             ' num2str(bottnar_ideal)])
 disp(['Antal verkliga  bottnar          ' num2str(bottnar_verklig)])
 disp(['Diameter på tornet (m)           ' num2str(d, '%.2f')])
 disp(['Höjd på tornet (m)               ' num2str(h)])
-disp([' ' ])
+disp(' ')
 
 % Vapour and liquid flowrates in kmol h^-1
 disp(['L (förstärkardel) (kmol h-1)     ' num2str(L, '%.2f')])
 disp(['V (förstärkardel) (kmol h-1)     ' num2str(V, '%.2f')])
 disp(['L (avdrivardel) (kmol h-1)       ' num2str(l, '%.2f')])
 disp(['V (avdrivardel) (kmol h-1)       ' num2str(v, '%.2f')])
-disp([' ' ])
+disp(' ')
 
 % Värmen
 disp(['Kondensorvärme (MW)              ' num2str(Q_condensor*10^-6, '%.3f')])
 disp(['Återkokarvärme (MW)              ' num2str(Q_reboiler*10^-6, '%.3f')])
-disp([' ' ])
+disp(' ')
 
 % Factors from correlation
 disp(['F_LV                             ' num2str(Flv, '%.3f')])
 disp(['C_F (ft s^-1)                    ' num2str(Cf/0.3048)])
-disp([' ' ])
+disp(' ')
 
 % Kostnad bottnar
-disp(['______________________Separationkostnader_____________________'])
+disp('______________________Separationkostnader_____________________')
 disp(['Kostnad (sieve) (kr)             ' num2str(kostnad_sieve, '%.2f')])
 disp(['Kostnad (valve) (kr)             ' num2str(kostnad_valve, '%.2f')])
 disp(['Kostnad (bubble) (kr)            ' num2str(kostnad_bubble, '%.2f')])
-disp([' ' ])
+disp(' ')
 
 % Väggtjocklek och pris på kolonn
 disp(['Volym (kolstål) (m^3)            ' num2str(Vwall_dest, '%.2f')])
@@ -597,7 +851,7 @@ disp(['Kostnad (rostfritt stål) (kr)    ' num2str(kostnad_colonwall_rostfri, '%
 %% Funktioner
 
 % Reaktorfunktioner
-function dUdV = PBR_ode(W, U, dHr0,A,E,K1,K2,P,Cp)
+function dUdV = PBR_ode(~, U, dHr0,A,E,K1,K2,P,Cp)
 
 R = 8.31447;               % gaskon.
 
@@ -624,7 +878,7 @@ CpD = @(T) Cp_calc(T,Cp(4,:));  %Cp för ämne D (H2O) vid T
 PA = P*(FA/F_tot);  %Partialtryck för ämne A (isobutan) för inflöde till reaktor
 PB = P*(FB/F_tot);  %Partialtryck för ämne B (isobuten)) för inflöde till reaktor
 PC = P*(FC/F_tot);  %Partialtryck för ämne C (H2)) för inflöde till reaktor
-PD = P*(FD/F_tot);  %Partialtryck för ämne D (H2O) för inflöde till reaktor
+% PD = P*(FD/F_tot);  %Partialtryck för ämne D (H2O) för inflöde till reaktor
 
 % Ke som funktion av T
 Ke = (2.1*10^7) * exp(-122*10^3/(8.314*T)); % [bar]
@@ -654,6 +908,7 @@ dUdV = [dFA
         dTdV];
 end
 
+% Beräkning av Cp vid T med hjälp av coeff.
 function Cp = Cp_calc(T, CPcoeff)
     A = CPcoeff(1);
     B = CPcoeff(2);
@@ -663,6 +918,16 @@ function Cp = Cp_calc(T, CPcoeff)
     Cp = A + B*T + C*T.^2 + D*T.^3;
 
 end
+
+% % Beräkning av NTU från epsilon
+% function diff = eps(epsilon,Cmm,NTU)
+% 
+% VL=epsilon;
+% HL=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));
+% 
+% diff=HL-VL;
+% 
+% end
 
 % Separationsfunktioner
 function [gamma1, gamma2] = wilson(x1,W12,W21)

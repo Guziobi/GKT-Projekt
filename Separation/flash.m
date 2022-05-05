@@ -48,6 +48,15 @@ HL1 = (L*tau)/((pi*D1.^2)/4);
 %Höjd flashtank
 H1 = HL1 + 1.5*D1;
 
+% Kärlets tjocklek tank 1
+rho_wall = [7900 8000];            % Densitet ( kolstål / rostfritt stål )
+S = [88.9 120.65]*10^6;
+
+t_flash1 = (1.1*p*D1*10^3)./(2*S-1.2*1.1*p); % [mm]
+
+Vwall_flash1 = pi.*((D1+2.*t_flash1*10^-3)/2).^2.*(H1+2*t_flash1*10^-3) - pi*(D1/2)^2*H1;
+mwall_flash1 = Vwall_flash1.*rho_wall;
+
 
 %% tank 2
 p = 101325*6; % Pa
@@ -75,14 +84,63 @@ HL2 = (L2*tau)/((pi*D2.^2)/4);
 %Höjd flashtank
 H2 = HL2 + 1.5*D2;
 
+% Kärlets tjocklek tank 2
+S = [88.9 137.9]*10^6;
 
-disp(['Diameter tank 1:               ' num2str(D1)])
-disp(['Höjd på tank 1:            ' num2str(H1)])
-disp([' ' ])
+t_flash2 = (1.1*p*D1*10^3)./(2*S-1.2*1.1*p); % [mm]
 
-disp(['Diameter tank 2:               ' num2str(D2)])
-disp(['Höjd på tank 2:            ' num2str(H2)])
+Vwall_flash2 = pi.*((D2+2.*t_flash2*10^-3)/2).^2.*(H2+2*t_flash2*10^-3) - pi*(D2/2)^2*H2;
+mwall_flash2 = Vwall_flash2.*rho_wall;
+
+%% Kostnader flash
+kurs = 9.99;                        % Växelkursen sek/dollar
+lang = 4;                           % Langfaktorn
+index = 596/532.9;
+
+Param_skalmassa = [11600 34 0.85
+                   17400 79 0.85];
+             
+% Flash 1               
+kostnad_flash1_kol = Cost(Vwall_flash1(1),Param_skalmassa(1,:))*kurs*lang*index;
+kostnad_flash1_rostfri = Cost(Vwall_flash1(2),Param_skalmassa(2,:))*kurs*lang*index;
+
+% Flash 2              
+kostnad_flash2_kol = Cost(Vwall_flash2(1),Param_skalmassa(1,:))*kurs*lang*index;
+kostnad_flash2_rostfri = Cost(Vwall_flash2(2),Param_skalmassa(2,:))*kurs*lang*index;
+
+%% UTSKRIVNING AV RESULTAT: Separation (flashtankar)
+
+disp(['SEPARATION (flashtankar):'])
 disp([' ' ])
+disp(['______________________Dimensionering__________________________'])
+disp(['Diameter tank 1 (m):                 ' num2str(D1)])
+disp(['Höjd på tank 1 (m):                  ' num2str(H1)])
+disp([' ' ])
+disp(['Diameter tank 2 (m):                 ' num2str(D2)])
+disp(['Höjd på tank 2 (m):                  ' num2str(H2)])
+disp([' ' ])
+disp(['______________________Utrustningskostnader_____________________'])
+disp(['Tank 1:' ])
+disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash1(1))])
+disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash1(1))])
+disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash1(1))])
+disp(['Volym (rostfritt stål) (m^3)        ' num2str(Vwall_flash1(2))])
+disp(['Massa (kolstål) (kg)                ' num2str(mwall_flash1(1))])
+disp(['Massa (rostfritt stål) (kg)         ' num2str(mwall_flash1(2))])
+disp(['Kostnad (kolstål) (kr)              ' num2str(kostnad_flash1_kol)])
+disp(['Kostnad (rostfritt stål) (kr)       ' num2str(kostnad_flash1_rostfri)])
+disp([' ' ])
+disp(['Tank 2:' ])
+disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash2(1))])
+disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash2(1))])
+disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash2(1))])
+disp(['Volym (rostfritt stål) (m^3)        ' num2str(Vwall_flash2(2))])
+disp(['Massa (kolstål) (kg)                ' num2str(mwall_flash2(1))])
+disp(['Massa (rostfritt stål) (kg)         ' num2str(mwall_flash2(2))])
+disp(['Kostnad (kolstål) (kr)              ' num2str(kostnad_flash2_kol)])
+disp(['Kostnad (rostfritt stål) (kr)       ' num2str(kostnad_flash2_rostfri)])
+
+%% Funktioner
 
 function res = find_Tb(T,x1,gamma1,gamma2,Ant1,Ant2,P)
 
@@ -107,7 +165,10 @@ function [gamma1, gamma2] = wilson(x1,W12,W21)
 
 end
 
-
-
-
-
+function kostnad = Cost(S,Param)
+    a = Param(1);
+    b = Param(2);
+    n = Param(3);
+    
+    kostnad = a + b*S.^n;
+end

@@ -89,13 +89,13 @@ Thut=Thin-q./(Fh_tot.*cph_tot);      %[K] Uttemperatur varm sida
 
 disp(['_____________Resultat Förvärmning med produktflöde_______________'])
 disp(['Area (m2):                                        ',num2str(A)])
-disp(['Överfört värme (J):                               ',num2str(q)])
+disp(['Effekt (W):                                       ',num2str(q)])
 disp(['Verkningsgrad:                                    ',num2str(epsilon)])
 disp(['Intemperatur, kall sida (K):                      ',num2str(Tcin)])
 disp(['Uttemperatur, kall sida (K):                      ',num2str(Tcut)])
 disp(['Intemperatur, varm sida (K):                      ',num2str(Thin)])
 disp(['Uttemperatur, varm sida (K):                      ',num2str(Thut)])
-disp(['Kostnad för värmeväxlaren (SEK):                  ',num2str(Ka)])
+disp(['Inköpskostnad (SEK):                              ',num2str(Ka)])
 
 
 %% Kylning 5-6
@@ -185,10 +185,10 @@ Thut=Thin-q./(F_tot.*cp_tot);    %[K] Uttemperatur varm sida
 
 disp(['_____________________Resultat Kylning 5-6_____________________'])
 disp(['Area (m2):                                        ',num2str(A)])
-disp(['Överfört värme (J):                               ',num2str(q)])
+disp(['Effekt (W):                                       ',num2str(q)])
 disp(['Uttemperatur, kall sida (K):                      ',num2str(Tcut)])
 disp(['Uttemperatur, varm sida (K):                      ',num2str(Thut)])
-disp(['Kostnad för värmeväxlaren (SEK):                  ',num2str(Ka)])
+disp(['Inköpskostnad (SEK):                              ',num2str(Ka)])
 disp(['Kostnad för kylvattnet (SEK/år):                  ',num2str(Kvatten_tot)])
 
 
@@ -254,11 +254,11 @@ Kel=0.30;                    %[SEK/kWh]
 Kel_tot=(qugn*10e6/1000)*tdrift*Kel; %[SEK/år] Total kostnad för elen
 
 
-disp(['________________________Resultat___________________________'])
+disp(['_____________________Resultat Ugn 1-2________________________'])
 disp(['Effekt (MW):                                      ',num2str(qugn)])
 disp(['Intemperatur (K):                                 ',num2str(Thin)])
 disp(['Uttemperatur (K):                                 ',num2str(Tut)])
-disp(['Kostnad för ugnen (SEK):                          ',num2str(K)])
+disp(['Inköpskostnad (SEK):                              ',num2str(K)])
 disp(['Kostnad för elen (SEK/år):                        ',num2str(Kel_tot)])
 
 %% Ugn 3-4
@@ -327,7 +327,7 @@ disp(['____________________Resultat Ugn 3-4________________________'])
 disp(['Nyttig effekt (MW):                               ',num2str(qugn)])
 disp(['Intemperatur (K):                                 ',num2str(Thin)])
 disp(['Uttemperatur (K):                                 ',num2str(Tut)])
-disp(['Kostnad för ugnen (SEK):                          ',num2str(K)])
+disp(['Inköpskostnad (SEK):                              ',num2str(K)])
 disp(['Kostnad för elen (SEK/år):                        ',num2str(Kel_tot)])
 
 %% Funktion för beräkning av Cp(T)
@@ -341,7 +341,7 @@ function Cp = Cp_calc(T, CPcoeff)
 
 end
 
-%% Beräkning av NTU från epsilon
+%% Beräkning av NTU eller epsilon
 function diff=eps(epsilon,Cmm,NTU)
 
 VL=epsilon;

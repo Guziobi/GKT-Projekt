@@ -181,34 +181,34 @@ disp(['REAKTOR:'])
 disp([' ' ])
 
 % Ut ur reaktor 1
-disp(['__________________Reaktor 1________________'])
-disp(['Butan ut (mol/s):                                    ',num2str(U1(end,1))])
-disp(['Buten ut (mol/s):                                    ',num2str(U1(end,2))])
-disp(['Vätgas ut (mol/s):                                   ',num2str(U1(end,3))])
-disp(['Temperatur ut (K):                                   ',num2str(U1(end,5))])
-disp(['Katalysatormassa (kg):                            ',num2str(Wfinal1)])
-disp(['Volym (m^3):                                      ',num2str(Vol1)])
-disp(['Diameter (m):                                      ',num2str(D1)])
-disp(['Längd (m):                                      ',num2str(D1*2)])
-disp(['Omsättningsgrad:                                  ',num2str(X1)])
+disp(['______________________Reaktor 1__________________________'])
+disp(['Butan ut (mol/s):                                ',num2str(U1(end,1))])
+disp(['Buten ut (mol/s):                                ',num2str(U1(end,2))])
+disp(['Vätgas ut (mol/s):                               ',num2str(U1(end,3))])
+disp(['Temperatur ut (K):                               ',num2str(U1(end,5))])
+disp(['Katalysatormassa (kg):                           ',num2str(Wfinal1)])
+disp(['Volym (m^3):                                     ',num2str(Vol1)])
+disp(['Diameter (m):                                    ',num2str(D1)])
+disp(['Längd (m):                                       ',num2str(D1*2)])
+disp(['Omsättningsgrad:                                 ',num2str(X1)])
 disp([' '])
 
 % Ut ur reaktor 2
-disp(['__________________Reaktor 2________________'])
-disp(['Butan ut (mol/s):                                    ',num2str(U(end,1))])
-disp(['Buten ut (mol/s):                                    ',num2str(U(end,2))])
-disp(['Vätgas ut (mol/s):                                   ',num2str(U(end,3))])
-disp(['Temperatur ut (K):                                   ',num2str(U(end,5))])
-disp(['Katalysatormassa (kg):                            ',num2str(Wfinal2)])
-disp(['Volym (m^3):                                      ',num2str(Vol2)])
-disp(['Diameter (m):                                      ',num2str(D2)])
-disp(['Längd (m):                                      ',num2str(D2*2)])
-disp(['Omsättningsgrad:                                  ',num2str(X2)])
+disp(['______________________Reaktor 2__________________________'])
+disp(['Butan ut (mol/s):                                ',num2str(U(end,1))])
+disp(['Buten ut (mol/s):                                ',num2str(U(end,2))])
+disp(['Vätgas ut (mol/s):                               ',num2str(U(end,3))])
+disp(['Temperatur ut (K):                               ',num2str(U(end,5))])
+disp(['Katalysatormassa (kg):                           ',num2str(Wfinal2)])
+disp(['Volym (m^3):                                     ',num2str(Vol2)])
+disp(['Diameter (m):                                    ',num2str(D2)])
+disp(['Längd (m):                                       ',num2str(D2*2)])
+disp(['Omsättningsgrad:                                 ',num2str(X2)])
 
 disp([' '])
-disp(['Omsättningsgrad TOTAL:                            ',num2str(X(end))])
-disp(['Katalysatormassa (kg) TOTAL:                      ',num2str(Wfinal1+Wfinal2)])
-disp(['Volym (m^3) TOTAL:                                ',num2str(Vol1+Vol2)])
+disp(['Omsättningsgrad TOTAL:                           ',num2str(X(end))])
+disp(['Katalysatormassa (kg) TOTAL:                     ',num2str(Wfinal1+Wfinal2)])
+disp(['Volym (m^3) TOTAL:                               ',num2str(Vol1+Vol2)])
 disp([' '])
 
 % Reaktorkostnad
@@ -223,9 +223,9 @@ disp([' ' ])
 
 %% Flash
 % Data
-k = 0.107; %m s-1 @8bar
-P = 101325; % Pa
-T = 348;
+k = 0.107; % m s-1 @8bar
+P = 101325; % Pa (1atm)
+T = 348; % K
 
 %Antoinekonstanter A  B  C
 Ant1 =  [15.7564 2132.42 -33.15];  % buten
@@ -240,36 +240,33 @@ MB = 56.1063;      % g mol-1  Buten
 MC = 2.0160;       % g mol-1  Vätgas
 MD = 18.0160;      % g mol-1  Vatten
 
-rhoA = 559.0;       % kgm-3 Buten
-rhoB = 556.62;      % kgm-3 Butan
-rhoD = 974.93;      % kg m-3 Vätska
+rhoA = 559.0;      % kg m-3 Buten
+rhoB = 556.62;     % kg m-3 Butan
+rhoD = 974.93;     % kg m-3 Vatten @ 75C
 
-%V =nRT/p
 % Vätskeflöde från tanken (Vatten)
-L = (U(end,4)*MD*1e-3)/rhoD; %m3/s
+L1 = (U(end,4)*MD*1e-3)/rhoD; %m3/s
 % Ångflöde ut
-V = ((sum(U(end,:))-U(end,4)-U(end,5))*R*T)/P; %m3/s
+V1 = ((sum(U(end,:))-U(end,4)-U(end,5))*R*T)/P; %m3/s
 
 %uppehållstid
 tau = 10*60; % s (10min)
-rho_L = rhoD;
-
-%sum(xi*(MiP/RT))
-rho_V = P*1e-3*(U(end,1)*MA + U(end,2)*MB + U(end,3)*MC)/(T*R*V);
-ut = k*sqrt((rho_L - rho_V)/rho_V); %m s-1
+rho_L1 = rhoD;
+rho_V1 = P*1e-3*(U(end,1)*MA + U(end,2)*MB + U(end,3)*MC)/(T*R*V1); %kg m-3
+ut = k*sqrt((rho_L1 - rho_V1)/rho_V1); %m s-1
 
 % Diameter
-D1 = sqrt(4*V/(pi*0.15*ut)); %m
+D1 = sqrt(4*V1/(pi*0.15*ut)); %m
 
 % Vätskehöjd
-HL1 = (L*tau)/((pi*D1.^2)/4);
+HL1 = (L1*tau)/((pi*D1.^2)/4); %m
 
 %Höjd flashtank
-H1 = HL1 + 1.5*D1;
+H1 = HL1 + 1.5*D1; %m
 
 % Kärlets tjocklek tank 1
 rho_wall = [7900 8000];            % Densitet ( kolstål / rostfritt stål )
-S = [88.9 120.65]*10^6;
+S = [88.9 120.65]*10^6;            % Materialspänning [N m-1]
 
 t_flash1 = (1.1*P*D1*10^3)./(2*S-1.2*1.1*P); % [mm]
 
@@ -278,33 +275,38 @@ mwall_flash1 = Vwall_flash1.*rho_wall;
 
 
 %% tank 2
-P = 101325*6; % Pa
+P = 101325*6; % Pa (6atm)
 
+%molbråk
 x1 = U(end,2)/(U(end,1) + U(end,2));
 
+%BP-beräkning
+options = optimset('Display','off');    % Så att skit inte skrivs ut efter fsolve
 [gamma1, gamma2] = wilson(x1,W12,W21);
 Tguess = 273;
-T = fsolve(@(T) find_Tb(T,x1,gamma1,gamma2,Ant1,Ant2,P*0.0075006168), Tguess);
+T = fsolve(@(T) find_Tb(T,x1,gamma1,gamma2,Ant1,Ant2,P*0.0075006168), Tguess, options);
 
+%Ång- och vätskeflöde ut ur tanken
 V2 = (U(end,3)*R*T)/P; %m3/s
 L2 = (U(end,1)*MA*1e-3)/rhoA + (U(end,2)*MB*1e-3)/rhoB; %m3/s
 
-rho_L = (U(end,1)*rhoA + U(end,2)*rhoB)/(U(end,1) + U(end,2)); %kg m-3
-rho_V = P*1e-3*(U(end,3)*MC)/(T*R*V2); %kg m-3
+%Densiteter för ånga och vätska
+rho_L2 = (U(end,1)*rhoA + U(end,2)*rhoB)/(U(end,1) + U(end,2)); %kg m-3
+rho_V2 = P*1e-3*(U(end,3)*MC)/(T*R*V2); %kg m-3
 
-ut = k*sqrt((rho_L - rho_V)/rho_V); %m s-1
+ut = k*sqrt((rho_L2 - rho_V2)/rho_V2); %m s-1
 
 % Diameter
 D2 = sqrt(4*V2/(pi*0.15*ut)); %m
 
 % Vätskehöjd
-HL2 = (L2*tau)/((pi*D2.^2)/4);
+HL2 = (L2*tau)/((pi*D2.^2)/4); %m
 
 %Höjd flashtank
-H2 = HL2 + 1.5*D2;
+H2 = HL2 + 1.5*D2; %m
 
 % Kärlets tjocklek tank 2
-S = [88.9 137.9]*10^6;
+S = [88.9 137.9]*10^6;    % Materialspänning [N m-1]
 
 t_flash2 = (1.1*P*D1*10^3)./(2*S-1.2*1.1*P); % [mm]
 
@@ -332,39 +334,38 @@ kostnad_flash2_rostfri = Cost(Vwall_flash2(2),Param_skalmassa(2,:))*kurs*lang*in
 disp(['SEPARATION (flashtankar):'])
 disp([' ' ])
 disp(['______________________Dimensionering__________________________'])
-disp(['Diameter tank 1 (m):                 ' num2str(D1)])
-disp(['Höjd på tank 1 (m):                  ' num2str(H1)])
+disp(['Diameter tank 1 (m):                 ' num2str(D1, '%.2f')])
+disp(['Höjd på tank 1 (m):                  ' num2str(H1, '%.2f')])
 disp([' ' ])
-disp(['Diameter tank 2 (m):                 ' num2str(D2)])
-disp(['Höjd på tank 2 (m):                  ' num2str(H2)])
+disp(['Diameter tank 2 (m):                 ' num2str(D2, '%.2f')])
+disp(['Höjd på tank 2 (m):                  ' num2str(H2, '%.2f')])
 disp([' ' ])
 disp(['______________________Utrustningskostnader_____________________'])
 disp(['Tank 1:' ])
-disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash1(1))])
-disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash1(1))])
-disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash1(1))])
-disp(['Volym (rostfritt stål) (m^3)        ' num2str(Vwall_flash1(2))])
-disp(['Massa (kolstål) (kg)                ' num2str(mwall_flash1(1))])
-disp(['Massa (rostfritt stål) (kg)         ' num2str(mwall_flash1(2))])
-disp(['Kostnad (kolstål) (kr)              ' num2str(kostnad_flash1_kol)])
-disp(['Kostnad (rostfritt stål) (kr)       ' num2str(kostnad_flash1_rostfri)])
+disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash1(1), '%.2f')])
+disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash1(1), '%.2f')])
+disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash1(1), '%.2f')])
+disp(['Volym (rostfritt stål) (m^3)        ' num2str(Vwall_flash1(2), '%.2f')])
+disp(['Massa (kolstål) (kg)                ' num2str(mwall_flash1(1), '%.2f')])
+disp(['Massa (rostfritt stål) (kg)         ' num2str(mwall_flash1(2), '%.2f')])
+disp(['Kostnad (kolstål) (kr)              ' num2str(kostnad_flash1_kol, '%.2f')])
+disp(['Kostnad (rostfritt stål) (kr)       ' num2str(kostnad_flash1_rostfri, '%.2f')])
 disp([' ' ])
 disp(['Tank 2:' ])
-disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash2(1))])
-disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash2(1))])
-disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash2(1))])
-disp(['Volym (rostfritt stål) (m^3)        ' num2str(Vwall_flash2(2))])
-disp(['Massa (kolstål) (kg)                ' num2str(mwall_flash2(1))])
-disp(['Massa (rostfritt stål) (kg)         ' num2str(mwall_flash2(2))])
-disp(['Kostnad (kolstål) (kr)              ' num2str(kostnad_flash2_kol)])
-disp(['Kostnad (rostfritt stål) (kr)       ' num2str(kostnad_flash2_rostfri)])
+disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash2(1), '%.2f')])
+disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash2(1), '%.2f')])
+disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash2(1), '%.2f')])
+disp(['Volym (rostfritt stål) (m^3)        ' num2str(Vwall_flash2(2), '%.2f')])
+disp(['Massa (kolstål) (kg)                ' num2str(mwall_flash2(1), '%.2f')])
+disp(['Massa (rostfritt stål) (kg)         ' num2str(mwall_flash2(2), '%.2f')])
+disp(['Kostnad (kolstål) (kr)              ' num2str(kostnad_flash2_kol, '%.2f')])
+disp(['Kostnad (rostfritt stål) (kr)       ' num2str(kostnad_flash2_rostfri, '%.2f')])
 
 %% Destillation
-options = optimset('Display','off');    % Så att skit inte skrivs ut efter fsolve
 
 % Data - separation 
 q = 1;              % kokvarmt tillflöde
-F = 133;            % kmol h-1
+F = (U(end,1) + U(end,2))*3.6;     % kmol h-1
 P = 2280;           % mmHg (3 atm)
 xf = U(end,2)/(U(end,1)+U(end,2)); % Komposition in till destillationskolonnen, molbråk buten
 xd = 0.95;          % destillatbråk 
@@ -376,8 +377,8 @@ Tb_1 = -6.3+273.15; % K   (buten)
 Tb_2 = -1+273.15;   % K   (butan)
 
 %Densiteter
-L_rho1 = 559.0;          % kgm-3 Buten
-L_rho2 = 556.62;         % kgm-3 Butan
+L_rho1 = 559.0;          % kg m-3 Buten
+L_rho2 = 556.62;         % kg m-3 Butan
 %Ytspänning
 surfaceten = 24;          % dyn cm-1
     
@@ -549,47 +550,49 @@ kostnad_colonwall_kol = Cost(mwall_dest(1),Param_skalmassa(1,:))*kurs*lang;
 kostnad_colonwall_rostfri = Cost(mwall_dest(2),Param_skalmassa(2,:))*kurs*lang;
 
 %% UTSKRIVNING AV RESULTAT: Separation
-disp(['SEPARATION:'])
+disp([' '])
+disp([' '])
+disp(['Destillation:'])
 disp([' ' ])
 disp(['______________________Dimensionering__________________________'])
-disp(['xf:                              ',num2str(xf)])
+disp(['xf:                              ',num2str(xf, '%.3f')])
 disp(['Antal ideala bottnar             ' num2str(bottnar_ideal)])
 disp(['Antal verkliga  bottnar          ' num2str(bottnar_verklig)])
-disp(['Diameter på tornet:              ' num2str(d)])
-disp(['Höjd på tornet:                  ' num2str(h)])
+disp(['Diameter på tornet (m)           ' num2str(d, '%.2f')])
+disp(['Höjd på tornet (m)               ' num2str(h)])
 disp([' ' ])
 
 % Vapour and liquid flowrates in kmol h^-1
-disp(['L (förstärkardel):               ' num2str(L)])
-disp(['V (förstärkardel):               ' num2str(V)])
-disp(['L (avdrivardel):                 ' num2str(l)])
-disp(['V (avdrivardel):                 ' num2str(v)])
+disp(['L (förstärkardel) (kmol h-1)     ' num2str(L, '%.2f')])
+disp(['V (förstärkardel) (kmol h-1)     ' num2str(V, '%.2f')])
+disp(['L (avdrivardel) (kmol h-1)       ' num2str(l, '%.2f')])
+disp(['V (avdrivardel) (kmol h-1)       ' num2str(v, '%.2f')])
 disp([' ' ])
 
 % Värmen
-disp(['Kondensorvärme (MW)              ' num2str(Q_condensor*10^-6)])
-disp(['Återkokarvärme (MW)              ' num2str(Q_reboiler*10^-6)])
+disp(['Kondensorvärme (MW)              ' num2str(Q_condensor*10^-6, '%.3f')])
+disp(['Återkokarvärme (MW)              ' num2str(Q_reboiler*10^-6, '%.3f')])
 disp([' ' ])
 
 % Factors from correlation
-disp(['F_LV                             ' num2str(Flv)])
+disp(['F_LV                             ' num2str(Flv, '%.3f')])
 disp(['C_F (ft s^-1)                    ' num2str(Cf/0.3048)])
 disp([' ' ])
 
 % Kostnad bottnar
 disp(['______________________Separationkostnader_____________________'])
-disp(['Kostnad (sieve) (kr)             ' num2str(kostnad_sieve)])
-disp(['Kostnad (valve) (kr)             ' num2str(kostnad_valve)])
-disp(['Kostnad (bubble) (kr)            ' num2str(kostnad_bubble)])
+disp(['Kostnad (sieve) (kr)             ' num2str(kostnad_sieve, '%.2f')])
+disp(['Kostnad (valve) (kr)             ' num2str(kostnad_valve, '%.2f')])
+disp(['Kostnad (bubble) (kr)            ' num2str(kostnad_bubble, '%.2f')])
 disp([' ' ])
 
 % Väggtjocklek och pris på kolonn
-disp(['Volym (kolstål) (m^3)            ' num2str(Vwall_dest)])
-disp(['Volym (rostfritt stål) (m^3)     ' num2str(Vwall_dest)])
-disp(['Massa (kolstål) (kg)             ' num2str(mwall_dest(1))])
-disp(['Massa (rostfritt stål) (kg)      ' num2str(mwall_dest(2))])
-disp(['Kostnad (kolstål) (kr)           ' num2str(kostnad_colonwall_kol)])
-disp(['Kostnad (rostfritt stål) (kr)    ' num2str(kostnad_colonwall_rostfri)])
+disp(['Volym (kolstål) (m^3)            ' num2str(Vwall_dest, '%.2f')])
+disp(['Volym (rostfritt stål) (m^3)     ' num2str(Vwall_dest, '%.2f')])
+disp(['Massa (kolstål) (kg)             ' num2str(mwall_dest(1), '%.2f')])
+disp(['Massa (rostfritt stål) (kg)      ' num2str(mwall_dest(2), '%.2f')])
+disp(['Kostnad (kolstål) (kr)           ' num2str(kostnad_colonwall_kol, '%.2f')])
+disp(['Kostnad (rostfritt stål) (kr)    ' num2str(kostnad_colonwall_rostfri, '%.2f')])
 
 %% Funktioner
 

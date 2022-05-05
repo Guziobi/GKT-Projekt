@@ -60,9 +60,9 @@ cph_tot=yh_A.*cp_A+yh_B.*cp_B+yh_C.*cp_C+yh_D.*cp_D; %[J/(molK)]
 %Total värmekapacitet, varm sida
 cpc_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
 
-U=50;                   %[W/(m2K)]      Värmegenomgångstal, gas/gas-vvx
+U=50;                   %[W/(m2 K)]      Värmegenomgångstal, gas/gas-vvx
 A=800;                  %[m2] Area
-
+%A=linspace(0,1000,1000)    %För att plotta epsilon mot A
 
 %Kostnader
 a=32000; b=70; n=1.2;   %Kostnadsparametrar
@@ -76,16 +76,18 @@ Cmm=Cmin./Cmax;         %Kvoten Cmin/Cmax
 
 NTU=U*A/Cmin;           %Number of transfered units
 
+
 epsilon=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));    %Termisk verkningsgrad
 
 
 %Sökt
-q=epsilon*Cmin*(Thin-Tcin);          %[J] Överförd värme
+q=epsilon*Cmin*(Thin-Tcin);          %[W] Effekt
 Tcut=Tcin+q./(Fc_tot.*cpc_tot);      %[K] Uttemperatur kall sida
 Thut=Thin-q./(Fh_tot.*cph_tot);      %[K] Uttemperatur varm sida
 
+%plot(A,epsilon) %För optimering av area
 
-disp(['________________________Resultat___________________________'])
+disp(['_____________Resultat Förvärmning med produktflöde_______________'])
 disp(['Area (m2):                                        ',num2str(A)])
 disp(['Överfört värme (J):                               ',num2str(q)])
 disp(['Verkningsgrad:                                    ',num2str(epsilon)])
@@ -107,7 +109,7 @@ M_D=18.01528;    %[kg/mol]       Molmassan för vatten
 
 %Produktflöde
 %Temperaturer
-Thin=600;                      %[K] Produktflödets temperatur in
+Thin=711.563;                  %[K] Produktflödets temperatur in
 Tut_guess=348;                 %[K] Önskad uttemp för Cp-approx, manuell iterering till denna temp nås
 Tmedel=(Thin+Tut_guess)./2;    %[K] Cp tas vid medeltemp
 
@@ -143,23 +145,12 @@ cp_Dl=Cp_calc(Tmedel, CPcoeffDl);
 cp_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
 
 %VVX-sidan (kalla)
-mvvx=60000/3600;          %[kg/s] Massflöde
+mvvx=120000/3600;         %[kg/s] Massflöde
 Fvvx=(1000*mvvx/M_D);     %[mol/s] Molflöde
 Tcin=287;                 %[K] Kondensatflödets temperatur in
-cpvvx=Cp_calc(Tcin, CPcoeffDl);   %[J/(mol K)]      Kondensatflödets värmekapacitet
+cpvvx=Cp_calc(Tcin, CPcoeffDl);   %[J/(mol K)] Kondensatflödets värmekapacitet (flytande vatten)
         
 U=200;                    %[W/(m2K)]      Värmegenomgångstal, gas/vätska-vvx
-
-%Kostnader och övrigt
-a=32000; b=70; n=1.2;     %Kostnadsparametrar
-
-A_guess=492;              %Gissning av area för iterering
-                          %Arean bestämmer kostnaden som i sin tur används för
-                          %att optimera arean
-
-Ka=a+b.*A_guess.^n.*9.99;   %[SEK]  Kostnad för värmeväxlaren (1 USD = 9.99 SEK)
-beta=0.05;                  %[SEK/Wh]       Kostnad för ångan
-tdrift=8000;                %[h/år]         Driftstid på ett år
 
 %Beräkning
 C=[F_tot*cp_tot Fvvx*cpvvx];    %[J/(K s)]
@@ -167,28 +158,38 @@ Cmin=min(C);
 Cmax=max(C);
 Cmm=Cmin./Cmax;         %Kvoten Cmin/Cmax
 
-%Optimering av area likt studioövning 5
-%Löser de/dNTU - bosse = 0, se funktionsfilen ekonomi.m
-NTU_guess = 4;
-NTU = fsolve(@(NTU) ekonomi(NTU, Cmm, Ka, U, Tcin, Thin, tdrift, beta), NTU_guess);
+%A=linspace(10,1000,1000);
 
+A=880;                      %[m2] Värmeväxlarens area
 
-epsilon = 0.8;          %Termisk verkningsgrad, given i PM
+NTU=U.*A./Cmin;
 
-A=NTU.*Cmin./U;         %[m2] Värmeväxlarens area
+epsilon=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));    %Termisk verkningsgrad
 
-q=epsilon*Cmin*(Thin-Tcin); %[J] Överfört värme
+%plot(A,epsilon)
 
-%Uttemperaturer
+%Kostnader och övrigt
+a=32000; b=70; n=1.2;       %Kostnadsparametrar
+
+Ka=a+b.*A.^n.*9.99;         %[SEK]  Kostnad för värmeväxlaren (1 USD = 9.99 SEK)
+tdrift=8000;                %[h/år] Driftstid på ett år
+Kvatten=0.05;               %[kr/kWh] Kostnad för kylvattnet
+
+%Sökt
+q=epsilon*Cmin*(Thin-Tcin);      %[W] Effekt
+
+Kvatten_tot=(q/1000)*tdrift*Kvatten; %[SEK/år] Total kostnad för kylvattnet
+
 Tcut=Tcin+q./(Fvvx.*cpvvx);      %[K] Uttemperatur kall sida
 Thut=Thin-q./(F_tot.*cp_tot);    %[K] Uttemperatur varm sida
 
-disp(['________________________Resultat___________________________'])
+disp(['_____________________Resultat Kylning 5-6_____________________'])
 disp(['Area (m2):                                        ',num2str(A)])
 disp(['Överfört värme (J):                               ',num2str(q)])
 disp(['Uttemperatur, kall sida (K):                      ',num2str(Tcut)])
 disp(['Uttemperatur, varm sida (K):                      ',num2str(Thut)])
 disp(['Kostnad för värmeväxlaren (SEK):                  ',num2str(Ka)])
+disp(['Kostnad för kylvattnet (SEK/år):                  ',num2str(Kvatten_tot)])
 
 
 %% Ugn 1-2
@@ -200,10 +201,10 @@ M_A=58.12*1000;  %[kg/mol]       Molmassan för isobutan
 M_B=56.11*1000;  %[kg/mol]       Molmassan för isobuten
 M_D=18.01528;    %[kg/mol]       Molmassan för vatten
 
-%Produktflöde
+%Reaktantflöde
 %Temperaturer
-Thin=273+180;            %[K]            Produktflödets temperatur in
-Tut=750;                 %[K]            Önskad uttemperatur
+Thin=658.5986;           %[K]            Reaktantflödets temperatur in
+Tut=929;                 %[K]            Önskad uttemperatur
 Tmedel=(Thin+Tut)./2;    %[K]            Cp tas vid medeltemperatur        
 dT=Tut-Thin;             %[K]            Temperaturdifferens
 
@@ -239,22 +240,26 @@ cp_Dl=Cp_calc(Tmedel, CPcoeffDl);
 cp_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
 
 %Produktflöde
-q=cp_tot.*F_tot.*dT;     %[W] Ugnens effekt
+q=cp_tot.*F_tot.*dT;     %[W] Ugnens nyttiga effekt
 
 E=0.8;                   %Verkningsgrad ugn
-qugn=(q/E)/10e6          %[MW] Ugnens nyttiga effekt
+qugn=(q/E)/10e6;         %[MW] Ugnens totala effekt
 
-%Kostnad
+%Kostnader och övrigt
 a=80000; b=109000; n=0.8;    %Kostnadsparametrar för cylindrisk ugn
+tdrift=8000;                 %[h/år]
+K=(a+b*qugn.^n)*9.99;        %[SEK]
 
-K=a+b*qugn.^n*9.99;           %[SEK]
+Kel=0.30;                    %[SEK/kWh]
+Kel_tot=(qugn*10e6/1000)*tdrift*Kel; %[SEK/år] Total kostnad för elen
 
 
 disp(['________________________Resultat___________________________'])
-disp(['Nyttig effekt (MW):                               ',num2str(qugn)])
+disp(['Effekt (MW):                                      ',num2str(qugn)])
 disp(['Intemperatur (K):                                 ',num2str(Thin)])
 disp(['Uttemperatur (K):                                 ',num2str(Tut)])
 disp(['Kostnad för ugnen (SEK):                          ',num2str(K)])
+disp(['Kostnad för elen (SEK/år):                        ',num2str(Kel_tot)])
 
 %% Ugn 3-4
 clc, clear
@@ -267,8 +272,8 @@ M_D=18.01528;    %[kg/mol]       Molmassan för vatten
 
 %Produktflöde
 %Temperaturer
-Thin=500;                %[K]            Produktflödets temperatur in
-Tut=750;                 %[K]            Önskad uttemperatur
+Thin=905;                %[K]            Produktflödets temperatur in
+Tut=950;                 %[K]            Önskad uttemperatur
 Tmedel=(Thin+Tut)./2;    %[K]            Cp tas vid medeltemperatur        
 dT=Tut-Thin;             %[K]            Temperaturdifferens
 
@@ -309,16 +314,21 @@ q=cp_tot.*F_tot.*dT;     %[W] Effekt
 E=0.8;                   %Verkningsgrad ugn
 qugn=(q/E)/10e6;         %[MW] Ugnens nyttiga effekt
 
-%Kostnad
+%Kostnader och övrigt
 a=80000; b=109000; n=0.8;    %Kostnadsparametrar för cylindrisk ugn
+tdrift=8000;                 %[h/år]
+K=(a+b*qugn.^n)*9.99;        %[SEK]
 
-K=a+b*qugn.^n*9.99;          %[SEK] Kostnad
+Kel=0.30;                    %[SEK/kWh]
+Kel_tot=(qugn*10e6/1000)*tdrift*Kel; %[SEK/år] Total kostnad för elen
 
-disp(['________________________Resultat___________________________'])
+
+disp(['____________________Resultat Ugn 3-4________________________'])
 disp(['Nyttig effekt (MW):                               ',num2str(qugn)])
 disp(['Intemperatur (K):                                 ',num2str(Thin)])
 disp(['Uttemperatur (K):                                 ',num2str(Tut)])
 disp(['Kostnad för ugnen (SEK):                          ',num2str(K)])
+disp(['Kostnad för elen (SEK/år):                        ',num2str(Kel_tot)])
 
 %% Funktion för beräkning av Cp(T)
 function Cp = Cp_calc(T, CPcoeff)

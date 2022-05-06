@@ -613,6 +613,7 @@ disp(['Kostnad (kolstål) (kr)              ' num2str(kostnad_flash1_kol, '%.2f'
 disp(['Kostnad (rostfritt stål) (kr)       ' num2str(kostnad_flash1_rostfri, '%.2f')])
 disp(' ')
 disp('Tank 2:')
+disp(['Temperatur:                         ' num2str(T)])
 disp(['Väggtjocklek (kolstål) (mm):        ' num2str(t_flash2(1), '%.2f')])
 disp(['Väggtjocklek (rostfritt stål) (mm): ' num2str(t_flash2(2), '%.2f')])
 disp(['Volym (kolstål) (m^3)               ' num2str(Vwall_flash2(1), '%.2f')])

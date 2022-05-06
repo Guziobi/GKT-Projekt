@@ -433,7 +433,7 @@ cp_D=Cp_calc(Tmedel, CPcoeffD);
 cp_tot = yh_A.*cp_A + yh_B.*cp_B + yh_C.*cp_C + yh_D.*cp_D; %[J/(molK)] 
 
 %VVX-sidan (kalla)
-mvvx=120000/3600;                 %[kg/s] Massflöde
+mvvx=23350/3600;                  %[kg/s] Massflöde
 Fvvx=(1000*mvvx/MD);              %[mol/s] Molflöde
 Tcin=287;                         %[K] Kondensatflödets temperatur in
 cpvvx=Cp_calc(Tcin, CPcoeffDl);   %[J/(mol K)] Kondensatflödets värmekapacitet (flytande vatten)

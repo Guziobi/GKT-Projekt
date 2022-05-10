@@ -113,6 +113,8 @@ Thin=711.563;                  %[K] Produktflödets temperatur in
 Tut_guess=348;                 %[K] Önskad uttemp för Cp-approx, manuell iterering till denna temp nås
 Tmedel=(Thin+Tut_guess)./2;    %[K] Cp tas vid medeltemp
 
+Thut=342;
+
 %Produktflöden [mol/s]
 Fc_A=20*10^3./3600;
 Fc_B=107*10^3./3600;
@@ -145,7 +147,7 @@ cp_Dl=Cp_calc(Tmedel, CPcoeffDl);
 cp_tot=yc_A.*cp_A+yc_B.*cp_B+yc_C.*cp_C+yc_D.*cp_D; %[J/(molK)] 
 
 %VVX-sidan (kalla)
-mvvx=120000/3600;         %[kg/s] Massflöde
+mvvx=20000/3600;         %[kg/s] Massflöde
 Fvvx=(1000*mvvx/M_D);     %[mol/s] Molflöde
 Tcin=287;                 %[K] Kondensatflödets temperatur in
 cpvvx=Cp_calc(Tcin, CPcoeffDl);   %[J/(mol K)] Kondensatflödets värmekapacitet (flytande vatten)
@@ -160,13 +162,17 @@ Cmm=Cmin./Cmax;         %Kvoten Cmin/Cmax
 
 %A=linspace(10,1000,1000);
 
-A=880;                      %[m2] Värmeväxlarens area
+%A=880;                      %[m2] Värmeväxlarens area
 
-NTU=U.*A./Cmin;
+%NTU=U.*A./Cmin;
+
+NTU=fsolve(@(NTU)NTUsolve(F_tot,cp_tot,Thut,Tcin,Cmin,Thin,NTU,Cmm),7)
 
 epsilon=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));    %Termisk verkningsgrad
 
 %plot(A,epsilon)
+
+A=NTU.*Cmin./U
 
 %Kostnader och övrigt
 a=32000; b=70; n=1.2;       %Kostnadsparametrar
@@ -330,6 +336,50 @@ disp(['Uttemperatur (K):                                 ',num2str(Tut)])
 disp(['Inköpskostnad (SEK):                              ',num2str(K)])
 disp(['Kostnad för elen (SEK/år):                        ',num2str(Kel_tot)])
 
+%% Återkokare
+clc,clear
+
+Tcin_rb=304;             %[K] Produktflödets temperatur in i återkokaren
+q_rb=2.813e6;            %[W] Återkokarvärme
+
+Thin_rb=180+273;         %[K] Värmeångans temperatur in
+
+%Molflöden [mol/s]
+FcA_rb=0.175e3./3600;    %Molflöde isobutan
+FcB_rb=31.7e3./3600;     %Molflöde isobuten
+
+Fctot_rb=FcA_rb+FcB_rb;  %[mol/s] Totalt molflöde
+
+Fh_rb=20;                %[mol/s] Molflöde varma sidan
+
+%Molbråk
+yA_rb=FcA_rb/Fctot_rb;
+yB_rb=FcB_rb/Fctot_rb;
+
+% Cp-koefficienter
+CPcoeffA = [-1.39 0.3847 -1.846*10^-4 2.895*10^-8];     % ISOBUTAN
+CPcoeffB = [16.05 0.2804 -1.091*10^-4 9.098*10^-9];     % ISOBUTEN
+CPcoeffD = [72.43 1.039*10^-2 -1.497*10^-6 0 ];         % VATTENÅNGA
+
+%Värmekapaciteter [J/(mol K)]
+cpA_rb=Cp_calc(Thin_rb, CPcoeffA);        
+cpB_rb=Cp_calc(Thin_rb, CPcoeffB);
+
+cpctot_rb=yA_rb.*cpA_rb+yB_rb.*cpB_rb;       %Total cp för produktflödet
+
+cph_rb=Cp_calc(Thin_rb, CPcoeffD);        %Cp för vattenångan, varma sidan
+
+%Cmin, Cmax, kvot
+C_rb=[Fh_rb*cph_rb Fctot_rb*cpctot_rb];
+Cmin_rb=min(C_rb);
+Cmax_rb=max(C_rb);
+Cr_rb=Cmin_rb/Cmax_rb;
+
+%Beräkning
+eps_rb=q_rb./(Cmin_rb.*(Thin_rb-Tcin_rb));
+
+NTU_rb=fsolve(@(NTU)NTUsolve(eps_rb,Cr_rb,NTU),5)
+
 %% Funktion för beräkning av Cp(T)
 function Cp = Cp_calc(T, CPcoeff)
     A = CPcoeff(1);
@@ -348,5 +398,16 @@ VL=epsilon;
 HL=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));
 
 diff=HL-VL;
+
+end
+
+%% AAAAA
+function diff2=NTUsolve(F_tot,cp_tot,Thut,Tcin,Cmin,Thin,NTU,Cmm)
+
+e1=-F_tot.*cp_tot.*(Thut-Thin)./(Cmin.*(Thin-Tcin));
+
+e2=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)))
+
+diff2=e1-e2;
 
 end

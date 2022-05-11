@@ -1,5 +1,7 @@
 %Flashtankar
 
+clc
+
 %todo: Kika enheter!
 
 % Data
@@ -11,6 +13,8 @@ T = 348;
 %Antoinekonstanter A  B  C
 Ant1 =  [15.7564 2132.42 -33.15];  % buten
 Ant2 =  [15.6782 2154.90 -34.42];  % butan 
+Ant3 = [13.6333 164.90 3.19];      % vätgas
+Ant4 = [18.3036 3816.44 -46.13];   % vatten
 %Wilsonfaktorer
 W12 = 0.48584; 
 W21 = 1.64637; 
@@ -57,6 +61,25 @@ t_flash1 = (1.1*p*D1*10^3)./(2*S-1.2*1.1*p); % [mm]
 Vwall_flash1 = pi.*((D1+2.*t_flash1*10^-3)/2).^2.*(H1+2*t_flash1*10^-3) - pi*(D1/2)^2*H1;
 mwall_flash1 = Vwall_flash1.*rho_wall;
 
+% Jämviktkurva och jämviktsplot
+P = (p/101325)*760;
+xeq = 0:0.001:1;    
+gamma1 = 1; 
+gamma2 = 1; 
+Tstart = linspace(-1+273.15,100+273.15,1001);
+TBeq=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant2,Ant4,P),Tstart,options);
+Psat1 = antoine(TBeq, Ant2);                                            % Ångtryck
+yeq = (gamma1.*xeq.*Psat1)./P;
+
+figure(5);
+plot(1-xeq,TBeq)
+hold on
+plot(1-yeq,TBeq)
+xlabel('x_1'), ylabel('T')
+axis([0 1 270 380])
+
+legend('Vätskeflöde', 'Gasflöde','Location','northwest')
+
 
 %% tank 2
 p = 101325*6; % Pa
@@ -91,6 +114,26 @@ t_flash2 = (1.1*p*D1*10^3)./(2*S-1.2*1.1*p); % [mm]
 
 Vwall_flash2 = pi.*((D2+2.*t_flash2*10^-3)/2).^2.*(H2+2*t_flash2*10^-3) - pi*(D2/2)^2*H2;
 mwall_flash2 = Vwall_flash2.*rho_wall;
+
+% Jämviktkurva och jämviktsplot
+P = (p/101325)*760;
+xeq = 0:0.001:1;    
+gamma1 = 1; 
+gamma2 = 1; 
+Tstart = linspace(-10+273.15,-6+273.15,1001);
+TBeq=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant1,Ant3,P),Tstart,options);
+Psat1 = antoine(TBeq, Ant1);                                            % Ångtryck
+yeq = (gamma1.*xeq.*Psat1)./P;
+
+figure(6);
+plot(xeq,TBeq)
+hold on
+plot(yeq,TBeq)
+xlabel('x_1'), ylabel('T')
+axis([0 1 40 300])
+
+legend('Vätskeflöde', 'Gasflöde','Location','northwest')
+
 
 %% Kostnader flash
 kurs = 9.99;                        % Växelkursen sek/dollar
@@ -162,6 +205,15 @@ function [gamma1, gamma2] = wilson(x1,W12,W21)
 
     gamma1 = exp(-log(x1+W12.*x2) + x2.*(W12./(x1+W12.*x2) - W21./(W21.*x1+x2)));
     gamma2= exp(-log(x2+W21.*x1) - x1.*(W12./(x1+W12.*x2) - W21./(W21.*x1+x2)));
+
+end
+
+function P_sat = antoine(T,Ant)
+
+    A = Ant(1);
+    B = Ant(2); 
+    C = Ant(3);
+    P_sat = exp(A-(B./(T+C))); 
 
 end
 

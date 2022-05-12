@@ -11,11 +11,11 @@ R = 8.3145;
 T = 348;
 
 %Antoinekonstanter A  B  C
-% Ant1 =  [15.7564 2132.42 -33.15];  % buten
-% Ant2 =  [15.6782 2154.90 -34.42];  % butan 
+Ant1 =  [15.7564 2132.42 -33.15];  % buten %från canvas
+Ant2 =  [15.6782 2154.90 -34.42];  % butan 
 
-Ant1 =  [15.7027, 1807.53, -26.15];  % buten  %från rapport
-Ant2 =  [15.7260, 1872.46, -25.26];  % butan 
+% Ant1 =  [15.7027, 1807.53, -26.15];  % buten  %andra värden
+% Ant2 =  [15.7260, 1872.46, -25.26];  % butan 
 
 
 Ant3 = [13.6333 164.90 3.19];      % vätgas
@@ -81,7 +81,7 @@ plot(1-xeq,TBeq1)
 hold on
 plot(1-yeq,TBeq1)
 xlabel('x_1'), ylabel('T')
-axis([0 1 270 380])
+axis([0 1 270 373])
 
 legend('Vätskeflöde', 'Gasflöde','Location','northwest')
 
@@ -153,7 +153,7 @@ plot(xeq2,TBeq2)
 hold on
 plot(yeq2,TBeq2)
 xlabel('x_1'), ylabel('T')
-axis([0 1 270 380])
+axis([0 1 28 324])
 
 legend('Vätskeflöde', 'Gasflöde','Location','northwest')
 

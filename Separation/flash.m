@@ -11,8 +11,13 @@ R = 8.3145;
 T = 348;
 
 %Antoinekonstanter A  B  C
-Ant1 =  [15.7564 2132.42 -33.15];  % buten
+Ant1 =  [15.7564 2132.42 -33.15];  % buten %från canvas
 Ant2 =  [15.6782 2154.90 -34.42];  % butan 
+
+% Ant1 =  [15.7027, 1807.53, -26.15];  % buten  %andra värden
+% Ant2 =  [15.7260, 1872.46, -25.26];  % butan 
+
+
 Ant3 = [13.6333 164.90 3.19];      % vätgas
 Ant4 = [18.3036 3816.44 -46.13];   % vatten
 %Wilsonfaktorer
@@ -20,13 +25,13 @@ W12 = 0.48584;
 W21 = 1.64637; 
 
 % Molmassor
-MA = 56.1063;      % g mol-1  Butan
-MB = 58.1222;      % g mol-1  Buten
+MA = 58.1222;      % g mol-1  Butan
+MB = 56.1063;      % g mol-1  Buten
 MC = 2.0160;       % g mol-1  Vätgas
 MD = 18.0160;      % g mol-1  Vatten
 
-rhoA = 559.0;       % kgm-3 Buten
-rhoB = 556.62;      % kgm-3 Butan
+rhoA = 556.62;      % kgm-3 Butan
+rhoB = 559.0;       % kgm-3 Buten
 rhoD = 974.93;      % kg m-3 Vätska
 
 %V =nRT/p
@@ -63,20 +68,20 @@ mwall_flash1 = Vwall_flash1.*rho_wall;
 
 % Jämviktkurva och jämviktsplot
 P = (p/101325)*760;
-xeq = 0:0.001:1;    
-gamma1 = 1; 
-gamma2 = 1; 
+xeq = 0:0.001:1;
+gamma1 = 1;
+gamma2 = 1;
 Tstart = linspace(-1+273.15,100+273.15,1001);
-TBeq=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant2,Ant4,P),Tstart,options);
-Psat1 = antoine(TBeq, Ant2);                                            % Ångtryck
+TBeq1=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant2,Ant4,P),Tstart,options);
+Psat1 = antoine(TBeq1, Ant2);                                            % Ångtryck
 yeq = (gamma1.*xeq.*Psat1)./P;
 
 figure(5);
-plot(1-xeq,TBeq)
+plot(1-xeq,TBeq1)
 hold on
-plot(1-yeq,TBeq)
+plot(1-yeq,TBeq1)
 xlabel('x_1'), ylabel('T')
-axis([0 1 270 380])
+axis([0 1 270 373])
 
 legend('Vätskeflöde', 'Gasflöde','Location','northwest')
 
@@ -116,21 +121,39 @@ Vwall_flash2 = pi.*((D2+2.*t_flash2*10^-3)/2).^2.*(H2+2*t_flash2*10^-3) - pi*(D2
 mwall_flash2 = Vwall_flash2.*rho_wall;
 
 % Jämviktkurva och jämviktsplot
+% P = (p/101325)*760;
+% xeq = 0:0.001:1;    
+% gamma1 = 1; 
+% gamma2 = 1; 
+% Tstart = linspace(100, 300, 1001); %K
+% TBeq2=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant3,Ant1,P),Tstart,options);
+% Psat2 = antoine(TBeq2, Ant3);                                                 % Ångtryck
+% yeq = (gamma1.*xeq.*Psat2)./P;
+% 
+% figure(6);
+% plot(xeq,TBeq2)
+% hold on
+% plot(yeq, TBeq2)
+% xlabel('x_1'), ylabel('T')
+% axis([0 1 40 300])
+% 
+% legend('Vätskeflöde', 'Gasflöde','Location','northwest')
+
 P = (p/101325)*760;
-xeq = 0:0.001:1;    
-gamma1 = 1; 
-gamma2 = 1; 
-Tstart = linspace(-10+273.15,-6+273.15,1001);
-TBeq=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant1,Ant3,P),Tstart,options);
-Psat1 = antoine(TBeq, Ant1);                                            % Ångtryck
-yeq = (gamma1.*xeq.*Psat1)./P;
+xeq2 = 0:0.001:1;
+gamma1 = 1;
+gamma2 = 1;
+Tstart = linspace(300,330,1001);
+TBeq2=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant1,Ant3,P),Tstart,options);
+Psat2 = antoine(TBeq2, Ant1);        % Ångtryck
+yeq2 = (gamma1.*xeq.*Psat2)./P;
 
 figure(6);
-plot(xeq,TBeq)
+plot(xeq2,TBeq2)
 hold on
-plot(yeq,TBeq)
+plot(yeq2,TBeq2)
 xlabel('x_1'), ylabel('T')
-axis([0 1 40 300])
+axis([0 1 28 324])
 
 legend('Vätskeflöde', 'Gasflöde','Location','northwest')
 

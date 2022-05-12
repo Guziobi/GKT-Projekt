@@ -11,8 +11,13 @@ R = 8.3145;
 T = 348;
 
 %Antoinekonstanter A  B  C
-Ant1 =  [15.7564 2132.42 -33.15];  % buten
-Ant2 =  [15.6782 2154.90 -34.42];  % butan 
+% Ant1 =  [15.7564 2132.42 -33.15];  % buten
+% Ant2 =  [15.6782 2154.90 -34.42];  % butan 
+
+Ant1 =  [15.7027, 1807.53, -26.15];  % buten  %från rapport
+Ant2 =  [15.7260, 1872.46, -25.26];  % butan 
+
+
 Ant3 = [13.6333 164.90 3.19];      % vätgas
 Ant4 = [18.3036 3816.44 -46.13];   % vatten
 %Wilsonfaktorer
@@ -139,8 +144,8 @@ xeq2 = 0:0.001:1;
 gamma1 = 1;
 gamma2 = 1;
 Tstart = linspace(300,330,1001);
-TBeq2=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant3,Ant1,P),Tstart,options);
-Psat2 = antoine(TBeq2, Ant3);        % Ångtryck
+TBeq2=fsolve(@(T)find_Tb(T,xeq,gamma1,gamma2,Ant1,Ant3,P),Tstart,options);
+Psat2 = antoine(TBeq2, Ant1);        % Ångtryck
 yeq2 = (gamma1.*xeq.*Psat2)./P;
 
 figure(6);

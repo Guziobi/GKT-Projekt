@@ -345,40 +345,138 @@ q_rb=2.813e6;            %[W] Återkokarvärme
 Thin_rb=180+273;         %[K] Värmeångans temperatur in
 
 %Molflöden [mol/s]
-FcA_rb=0.175e3./3600;    %Molflöde isobutan
-FcB_rb=31.7e3./3600;     %Molflöde isobuten
+FcA_rb=3.33e3./3600;     %Molflöde isobutan
+FcB_rb=1.67e3./3600;     %Molflöde isobuten
 
-Fctot_rb=FcA_rb+FcB_rb;  %[mol/s] Totalt molflöde
+Fctot_rb=FcA_rb+FcB_rb;  %[mol/s] Totalt molflöde (produkt)
 
-Fh_rb=20;                %[mol/s] Molflöde varma sidan
+Fh_rb=300;               %[mol/s] Molflöde varma sidan (ånga)
 
 %Molbråk
 yA_rb=FcA_rb/Fctot_rb;
 yB_rb=FcB_rb/Fctot_rb;
 
 % Cp-koefficienter
-CPcoeffA = [-1.39 0.3847 -1.846*10^-4 2.895*10^-8];     % ISOBUTAN
-CPcoeffB = [16.05 0.2804 -1.091*10^-4 9.098*10^-9];     % ISOBUTEN
 CPcoeffD = [72.43 1.039*10^-2 -1.497*10^-6 0 ];         % VATTENÅNGA
 
-%Värmekapaciteter [J/(mol K)]
-cpA_rb=Cp_calc(Thin_rb, CPcoeffA);        
-cpB_rb=Cp_calc(Thin_rb, CPcoeffB);
+%Värmekapacitet för ångan
+Thutguess_rb=330;                         %Approx uttemp för bättre värde på Cp
+Thmedel_rb=(Thutguess_rb+Thin_rb)./2;     %Ångans medeltemp
+cph_rb=Cp_calc(Thmedel_rb, CPcoeffD);        %Cp för vattenångan, varma sidan
 
-cpctot_rb=yA_rb.*cpA_rb+yB_rb.*cpB_rb;       %Total cp för produktflödet
+%Förångningsentalpier används istället för Cp då ingen temperaturökning
+%sker på kalla sidan
+dH_A=19.99e3;                             %[J/mol] Förångningsentalpi för isobutan
+dH_B=20.6e3;                              %[J/mol] Förångningsentalpi för isobuten
 
-cph_rb=Cp_calc(Thin_rb, CPcoeffD);        %Cp för vattenångan, varma sidan
+dHtot_rb=yA_rb.*dH_A+yB_rb.*dH_B;         %[J/mol] Total ångbildningsentalpi
 
 %Cmin, Cmax, kvot
-C_rb=[Fh_rb*cph_rb Fctot_rb*cpctot_rb];
+C_rb=[Fh_rb*cph_rb Fctot_rb*dHtot_rb];
 Cmin_rb=min(C_rb);
 Cmax_rb=max(C_rb);
 Cr_rb=Cmin_rb/Cmax_rb;
 
+U_rb=1000;       %[W/(m2 K)] Värgmegenomgångstal, kondensor/återkokare
+
 %Beräkning
+Thut_rb=Thin_rb-q_rb./(Fh_rb.*cph_rb);
 eps_rb=q_rb./(Cmin_rb.*(Thin_rb-Tcin_rb));
 
-NTU_rb=fsolve(@(NTU)NTUsolve(eps_rb,Cr_rb,NTU),5)
+NTU_rb=fsolve(@(NTU)eps(eps_rb,Cr_rb,NTU),1);
+
+A_rb=NTU_rb.*Cmin_rb./U_rb;
+
+%Kostnader och övrigt
+a_rb=32000; b_rb=70; n_rb=1.2;          %Kostnadsparametrar
+K_rb=a_rb+b_rb.*A_rb.^n_rb.*9.99;       %[SEK] Inköpskostnad
+tdrift=8000;                            %[h/år] Driftstid
+
+Kanga_rb=0.16;                              %[kr/kWh] Kostnad för ångan
+Kangatot_rb=(q_rb/1000)*tdrift*Kanga_rb;    %[SEK/år] Årlig kostnad för kylvattnet
+
+
+
+disp(['_______________________Återkokare________________________'])
+disp(['Area (m2):                                        ',num2str(A_rb)])
+disp(['Verkningsgrad:                                    ',num2str(eps_rb)])
+disp(['Effekt (W):                                       ',num2str(q_rb)])
+disp(['Uttemperatur, varm sida (K):                      ',num2str(Thut_rb)])
+disp(['Inköpskostnad (SEK):                              ',num2str(K_rb)])
+disp(['Kostnad för ångan (SEK/år):                       ',num2str(Kangatot_rb)])
+
+
+%% Kondensor
+clc,clear
+
+Thin_kd=299;             %[K] Produktflödets temperatur in i kondensorn
+q_kd=2.807e6;            %[W] Kondensorvärme
+
+Tcin_kd=273+10;          %[K] Kylvattnets temperatur in
+
+%Molflöden varma sidan (produktflöde) [mol/s]
+FhA_kd=0.175e3./3600;    %Molflöde isobutan
+FhB_kd=31.7e3./3600;     %Molflöde isobuten
+
+Fhtot_kd=FhA_kd+FhB_kd;  %[mol/s] Totalt molflöde (produkt)
+
+Fc_kd=11000;             %[mol/s] Molflöde kalla sidan
+
+%Molbråk
+yA_kd=FhA_kd/Fhtot_kd;
+yB_kd=FhB_kd/Fhtot_kd;
+
+% Cp-koefficienter
+CPcoeffDl = [32.24 0.001924 1.055e-5 -3.596e-9];   % Flytande vatten
+
+%Värmekapacitet för kylvattnet
+Tcutguess_kd=292;                         %Approx uttemp för kylvattnet
+Tcmedel_kd=(Tcutguess_kd+Tcin_kd)./2;     %Kylvattnets medeltemp för Cp
+cpc_kd=Cp_calc(Tcmedel_kd, CPcoeffDl);    %Cp för kylvattnet
+
+
+%Förångningsentalpier används istället för Cp då ingen temperaturändring
+%sker på varma sidang
+dH_A=19.99e3;                             %[J/mol] Förångningsentalpi för isobutan
+dH_B=20.6e3;                              %[J/mol] Förångningsentalpi för isobuten
+
+dHtot_kd=yA_kd.*dH_A+yB_kd.*dH_B;         %[J/mol] Total ångbildningsentalpi
+
+%Cmin, Cmax, kvot
+C_kd=[Fc_kd*cpc_kd Fhtot_kd*dHtot_kd];
+Cmin_kd=min(C_kd);
+Cmax_kd=max(C_kd);
+Cr_kd=Cmin_kd/Cmax_kd;
+
+U_kd=1000;       %[W/(m2 K)] Värgmegenomgångstal, kondensor/återkokare
+
+%Beräkning
+Tcut_kd=Tcin_kd+q_kd./(Fc_kd.*cpc_kd);
+eps_kd=q_kd./(Cmin_kd.*(Thin_kd-Tcin_kd));
+
+
+NTU_kd=fsolve(@(NTU)eps(eps_kd,Cr_kd,NTU),1);
+
+A_kd=NTU_kd.*Cmin_kd./U_kd;
+
+%Kostnader och övrigt
+a_kd=32000; b_kd=70; n_kd=1.2;              %Kostnadsparametrar
+K_kd=a_kd+b_kd.*A_kd.^n_kd.*9.99;           %[SEK] Inköpskostnad
+tdrift=8000;                                %[h/år] Driftstid
+
+Kvatten_kd=0.05;                                   %[SEK/kWh] Kostnad för kylvattnet (under 14 C)
+Kvattentot_kd=(q_kd/1000)*tdrift*Kvatten_kd;    %[SEK/år] Total kostnad för kylvattnet
+
+
+
+disp(['_______________________Kondensor_________________________'])
+disp(['Area (m2):                                        ',num2str(A_kd)])
+disp(['Verkningsgrad:                                    ',num2str(eps_kd)])
+disp(['Effekt (W):                                       ',num2str(q_kd)])
+disp(['Uttemperatur, kall sida (K):                      ',num2str(Tcut_kd)])
+disp(['Inköpskostnad (SEK):                              ',num2str(K_kd)])
+disp(['Kostnad för kylvattnet (SEK/år):                  ',num2str(Kvattentot_kd)])
+
 
 %% Funktion för beräkning av Cp(T)
 function Cp = Cp_calc(T, CPcoeff)
@@ -397,7 +495,7 @@ function diff=eps(epsilon,Cmm,NTU)
 VL=epsilon;
 HL=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));
 
-diff=HL-VL;
+diff=VL-HL;
 
 end
 
@@ -406,7 +504,7 @@ function diff2=NTUsolve(F_tot,cp_tot,Thut,Tcin,Cmin,Thin,NTU,Cmm)
 
 e1=-F_tot.*cp_tot.*(Thut-Thin)./(Cmin.*(Thin-Tcin));
 
-e2=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)))
+e2=(1-exp(-NTU.*(1-Cmm)))./(1-Cmm.*exp(-NTU.*(1-Cmm)));
 
 diff2=e1-e2;
 

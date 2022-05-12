@@ -33,7 +33,7 @@ clc,clear
 
 %Indata
 %Tryck och temperaturer
-Tin=288;            %[K] Intemperatur
+Tin=343;            %[K] Intemperatur
 Pin=1.01325e5;      %[Pa] Tryck in (1 atm)
 Put=6*1.01325e5;    %[Pa] Tryck ut (6 atm)
 
@@ -71,7 +71,28 @@ Ctot=Ftot.*cptot;           %[J/(s K)]
 kappa=cptot./(cptot-R);     %Kappatal
 eta_is=0.8;                 %Isentropverkningsgrad
 
-[Wtot,Qkyl,Akyltot,Tut]=kompressor(Ctot,kappa,Pin,Tin,Put,eta_is)
+[Wtot,Qkyl,Akyltot,Tut]=kompressor(Ctot,kappa,Pin,Tin,Put,eta_is);
+
+Wtotkw=Wtot*10^-3;                             %Effektbehov i kW  
+Qkylkw=Qkyl*10^-3;                             %Kylbehov i kW
+
+%Kostnader och övrigt
+a_komp=580000; b_komp=20000; n_komp=0.6;    %Kostnadsparametrar
+K_komp=a_komp+b_komp.*Wtotkw.^n_komp.*9.99;    %[SEK] Inköpskostnad
+
+Kel=0.30;                                   %[SEK/kWh] Kostnad för elen
+tdrift=8000;                                %[h/år] Driftstid
+Kdrift_komp=(Wtot/1000)*tdrift*Kel;         %[SEK/år] Driftskostnad
+
+
+disp(['_______________________Kompressor_________________________'])
+disp(['Effektbehov kompressor (kW):                      ',num2str(Wtotkw)])
+disp(['Kylbehov i mellankylare (kW):                     ',num2str(Qkylkw)])
+disp(['VVX-area i mellankylare (m2):                     ',num2str(Akyltot)])
+disp(['Uttemperatur från kompressor(K):                  ',num2str(Tut)])
+disp(['Inköpskostnad (SEK):                              ',num2str(K_komp)])
+disp(['Driftskostnad (SEK/år):                           ',num2str(Kdrift_komp)])
+
 
 function [Wtot,Qkyltot,Akyltot,Tut]=kompressor(Ctot,kappa,Pin,Tin,Put,eta_is)
 %Tryck kning per steg.?
@@ -99,8 +120,9 @@ Ukyl = 200; %[W/(m2K)]
 %V rmev xlararea f r 1 mellankylare???
 Akyl = Qkyl/(Ukyl*deltaTlm); %[m2] 
 %Total v rmev xlararea f r mellankylarna.???
-Akyltot = 2*Akyl; %[m2] 
+Akyltot = 3*Akyl; %[m2] 
 end
+
 
 function Cp = Cp_calc(T, CPcoeff)
     A = CPcoeff(1);
